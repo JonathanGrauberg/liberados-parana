@@ -4,9 +4,11 @@ import type { PublicProduct, Settings } from "./types";
 export function pickDeal(products: PublicProduct[], settings: Settings) {
   const chosen = products.find((p) => p.id === settings.weeklyDeal?.productId && p.stock > 0);
   if (chosen) return chosen;
-  return products
+  const best = products
     .filter((p) => p.stock > 0 && p.comparePrice && p.comparePrice > p.price)
     .sort((a, b) => discount(b) - discount(a))[0];
+  // sin descuentos cargados: el primer destacado con precio y stock
+  return best ?? products.find((p) => p.featured && p.stock > 0 && !p.priceOnRequest);
 }
 
 export const discount = (p: { price: number; comparePrice?: number }) =>

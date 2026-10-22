@@ -9,12 +9,20 @@ export type Product = {
   brand: string;
   category: CategoryId;
   condition: Condition;
-  /** Precio de venta en pesos */
+  /** Moneda en la que se carga el precio. Si es USD, la web muestra también el equivalente en pesos. */
+  currency: Currency;
+  /** Precio de lista (tarjeta / cuotas) */
   price: number;
-  /** Precio de lista anterior (para mostrar tachado) */
+  /** Precio contado efectivo (opcional, suele ser menor que el de lista) */
+  cashPrice?: number;
+  /** Sin precio publicado: la web muestra "Consultá precio" y lleva a WhatsApp */
+  priceOnRequest?: boolean;
+  /** Precio anterior (para mostrar tachado) */
   comparePrice?: number;
   /** Costo (solo panel interno, nunca se muestra en la web) */
   cost?: number;
+  /** Proveedor o "Canje" (solo panel interno) */
+  supplier?: string;
   installments?: { count: number; amount: number };
   stock: number;
   /** Color de acento del equipo (hex). Se calcula solo al subir la foto. */
@@ -33,25 +41,31 @@ export type Product = {
   updatedAt: string;
 };
 
+export type Currency = "USD" | "ARS";
+
 export type PaymentMethod = "efectivo" | "transferencia" | "debito" | "credito" | "otro";
 
 export type SaleItem = {
   productId: string;
   name: string;
   qty: number;
+  /** En la moneda del producto */
   unitPrice: number;
   unitCost?: number;
+  currency?: Currency;
 };
 
 export type Sale = {
   id: string;
   date: string;
   items: SaleItem[];
-  /** Equipo recibido en parte de pago (plan canje) */
+  /** Equipo recibido en parte de pago (plan canje), valor en pesos */
   tradeIn?: { description: string; value: number };
   payment: PaymentMethod;
-  /** Lo que efectivamente pagó el cliente (total − canje) */
+  /** Lo que efectivamente pagó el cliente (total − canje), en pesos */
   total: number;
+  /** Cotización del dólar usada en esa venta */
+  usdRate?: number;
   note?: string;
 };
 
@@ -71,6 +85,7 @@ export type StockMove = {
 export type TimeRange = { from: string; to: string };
 export type DayHours = { open: boolean; ranges: TimeRange[] };
 
+/** Valor máximo que se toma el equipo, en dólares */
 export type TradeInModel = { id: string; name: string; value: number };
 
 export type Promo = { id: string; image: string; title: string; active: boolean };
@@ -87,6 +102,9 @@ export type Settings = {
   /** 0 = domingo … 6 = sábado */
   hours: DayHours[];
   hoursNote: string;
+  /** Cotización del dólar (pesos por dólar) que carga el local */
+  usdRate: number;
+  usdRateUpdatedAt?: string;
   tradeIn: { models: TradeInModel[]; note: string };
   promos: Promo[];
   /** Producto en "Oferta de la semana". Vacío = el de mayor descuento. */
@@ -120,5 +138,5 @@ export type DB = {
   settings: Settings;
 };
 
-/** Lo que la web pública puede ver de un producto (sin costo). */
-export type PublicProduct = Omit<Product, "cost">;
+/** Lo que la web pública puede ver de un producto (sin costo ni proveedor). */
+export type PublicProduct = Omit<Product, "cost" | "supplier">;

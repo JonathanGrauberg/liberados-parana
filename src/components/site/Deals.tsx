@@ -5,8 +5,9 @@ import { ArrowRight } from "lucide-react";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { dealEnd, discount, pickDeal } from "@/lib/deal";
-import { money } from "@/lib/format";
+import { money, toArs } from "@/lib/format";
 import { ProductVisual } from "./ProductVisual";
+import { Price } from "./Price";
 import { useSite } from "./SiteContext";
 
 /** Oferta de la semana + accesos rápidos, en una grilla de líneas finas. */
@@ -14,7 +15,7 @@ export function Deals() {
   const { products, settings, showCategory } = useSite();
   const deal = pickDeal(products, settings);
   const accessories = products.filter((p) => p.category === "accesorios");
-  const cheapestAcc = accessories.length ? Math.min(...accessories.map((p) => p.price)) : 0;
+  const cheapestAcc = accessories.length ? Math.min(...accessories.map((p) => toArs(p.cashPrice || p.price, p.currency, settings.usdRate))) : 0;
 
   return (
     <section className="relative z-10 bg-ink px-5 pb-4 pt-16 md:px-8 md:pt-20">
@@ -84,13 +85,7 @@ function WeeklyDeal() {
           <h3 className="title-lux text-[clamp(32px,4vw,56px)] !font-medium">{deal.name}</h3>
           <p className="mt-1 text-fg/55">{[deal.storage, deal.colorName].filter(Boolean).join(" · ")}</p>
           <div className="mt-5">
-            {deal.comparePrice && deal.comparePrice > deal.price && <p className="text-muted line-through">{money(deal.comparePrice)}</p>}
-            <p className="font-display text-3xl font-normal tracking-tight md:text-4xl">{money(deal.price)}</p>
-            {deal.installments && (
-              <p className="text-sm text-muted">
-                o {deal.installments.count} cuotas de {money(deal.installments.amount)}
-              </p>
-            )}
+            <Price p={deal} size="md" />
           </div>
         </div>
         <div className="flex flex-wrap items-end gap-5">

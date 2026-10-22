@@ -93,7 +93,7 @@ export function MapaParana({ label }: { label: string }) {
               style={{ transform: `translateZ(${-(i + 1) * 1.6}px)` }}
               aria-hidden
             >
-              <use href={`#arg-${uid}`} fill={i === CAPAS - 1 ? "rgba(0,0,0,.6)" : "#1c1c22"} />
+              <use href={`#arg-${uid}`} style={{ fill: i === CAPAS - 1 ? "rgba(0,0,0,.35)" : "var(--map-side)" }} />
             </svg>
           ))}
 
@@ -105,9 +105,8 @@ export function MapaParana({ label }: { label: string }) {
                 <path
                   key={p.nombre}
                   d={p.d}
-                  fill={er ? "#16282b" : "#131317"}
+                  style={{ fill: er ? "var(--map-er)" : "var(--map-face)", stroke: er ? "var(--accent)" : "var(--map-stroke)" }}
                   fillOpacity={1}
-                  stroke={er ? "var(--accent)" : "rgba(255,255,255,.14)"}
                   strokeWidth={er ? 1.2 : 0.6}
                   vectorEffect="non-scaling-stroke"
                 />
@@ -125,7 +124,7 @@ export function MapaParana({ label }: { label: string }) {
             >
               <span className="absolute bottom-0 left-0 block -translate-x-1/2" style={{ width: 56, height: 76 }}>
                 <span
-                  className="absolute inset-x-0 top-0 grid place-items-center border border-white/80 bg-ink shadow-[0_10px_24px_rgba(0,0,0,.6)]"
+                  className="absolute inset-x-0 top-0 grid place-items-center border border-fg/70 bg-ink shadow-[0_10px_24px_rgba(0,0,0,.6)]"
                   style={{ width: 56, height: 56, borderRadius: "50% 50% 50% 0", transform: "rotate(-45deg)" }}
                 >
                   <span style={{ transform: "rotate(45deg)" }} className="block w-7">

@@ -22,6 +22,40 @@
   --brand-gradient: linear-gradient(120deg, var(--cyan) 0%, var(--violet) 50%, var(--pink) 100%);
 }
 
+/* ───────────── MODO CLARO (lo elige el visitante con el botón del navbar) ───────────── */
+:root {
+  --ped-edge: #0c0c0f;
+  --ped-mid: #24242a;
+  --ped-top-1: #2a2a31;
+  --ped-top-2: #141418;
+  --ped-rim: rgba(255, 255, 255, 0.22);
+  --map-side: #1c1c22;
+  --map-face: #131317;
+  --map-er: #16282b;
+  --map-stroke: rgba(255, 255, 255, 0.14);
+}
+html[data-theme="light"] {
+  --ink: #f4f3ef;
+  --ink-2: #ebe9e4;
+  --ink-3: #e2e0da;
+  --fg: #141417;
+  --muted: #6b6a72;
+  --line: rgba(0, 0, 0, 0.1);
+  --line-strong: rgba(0, 0, 0, 0.26);
+  --accent: #0b8a8d;
+  --ped-edge: #cfccc5;
+  --ped-mid: #f3f2ee;
+  --ped-top-1: #ffffff;
+  --ped-top-2: #e6e4de;
+  --ped-rim: rgba(0, 0, 0, 0.18);
+  --map-side: #d9d6cf;
+  --map-face: #ecebe6;
+  --map-er: #cfe9ea;
+  --map-stroke: rgba(0, 0, 0, 0.16);
+  color-scheme: light;
+}
+@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
 @theme inline {
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
@@ -44,8 +78,10 @@
 html {
   -webkit-text-size-adjust: 100%;
 }
+html { color-scheme: dark; }
 body {
   background: var(--ink);
+  transition: background-color 0.5s, color 0.5s;
   color: var(--fg);
   font-family: var(--font-text), system-ui, sans-serif;
   font-size: 17px;

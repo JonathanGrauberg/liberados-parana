@@ -6,11 +6,12 @@ import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { conditions } from "@/brand.config";
 import { discount } from "@/lib/deal";
-import { money, waLink } from "@/lib/format";
+import { waLink } from "@/lib/format";
 import type { PublicProduct, Spec } from "@/lib/types";
 import { Badge } from "./Catalog";
 import { WhatsAppIcon } from "./icons";
 import { ProductVisual } from "./ProductVisual";
+import { Price, priceText } from "./Price";
 import { useSite } from "./SiteContext";
 
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -47,7 +48,7 @@ export function ProductModal() {
   }, [p, openProduct]);
 
   const msg = p
-    ? `¡Hola Liberados! Me interesa el ${p.name}${p.storage ? ` ${p.storage}` : ""}${p.colorName ? ` (${p.colorName})` : ""} que vi en la web a ${money(p.price)}. ¿Está disponible?`
+    ? `¡Hola Liberados! Me interesa el ${p.name}${p.storage ? ` ${p.storage}` : ""}${p.colorName ? ` (${p.colorName})` : ""} que vi en la web${p.priceOnRequest ? "" : ` a ${priceText(p)}`}. ¿${p.priceOnRequest ? "Me pasás precio y disponibilidad" : "Está disponible"}?`
     : "";
   const callouts = p ? calloutsFor(p) : [];
   const off = p ? discount(p) : 0;
@@ -150,7 +151,7 @@ export function ProductModal() {
               <div>
                 <div className="flex flex-wrap gap-2">
                   <Badge tone={conditions[p.condition].tone}>{conditions[p.condition].label}</Badge>
-                  {p.stock <= 0 ? <Badge tone="gray">Sin stock — consultá</Badge> : p.stock <= 2 ? <Badge tone="amber">Últimas unidades</Badge> : <Badge tone="cyan">En stock</Badge>}
+                  {p.priceOnRequest ? <Badge tone="cyan">Consultá disponibilidad</Badge> : p.stock <= 0 ? <Badge tone="gray">Sin stock — consultá</Badge> : p.condition === "usado" ? <Badge tone="cyan">Unidad única</Badge> : p.stock <= 2 ? <Badge tone="amber">Últimas unidades</Badge> : <Badge tone="cyan">En stock</Badge>}
                 </div>
                 <p className="mt-5 text-muted">{p.brand}</p>
                 <h3 className="title-lux text-4xl !font-medium md:text-5xl">{p.name}</h3>
@@ -163,18 +164,8 @@ export function ProductModal() {
               </div>
 
               <div className="border border-line p-6">
-                {p.comparePrice && p.comparePrice > p.price && (
-                  <p className="flex items-center gap-3 text-muted">
-                    <span className="line-through">{money(p.comparePrice)}</span>
-                    {off > 0 && <span className="font-display text-xs tracking-[0.1em] text-accent">−{off}%</span>}
-                  </p>
-                )}
-                <p className="font-display text-4xl font-light tracking-tight">{money(p.price)}</p>
-                {p.installments && (
-                  <p className="mt-1 text-muted">
-                    o {p.installments.count} cuotas de {money(p.installments.amount)}
-                  </p>
-                )}
+                {off > 0 && <p className="font-display mb-1 text-xs tracking-[0.1em] text-accent">−{off}%</p>}
+                <Price p={p} size="lg" />
                 <div className="mt-6 grid gap-3">
                   <a
                     href={waLink(settings.contact.whatsapp, msg)}
@@ -224,7 +215,7 @@ function Callout({ spec, side, top, delay }: { spec: Spec; side: "left" | "right
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ delay: delay + 0.25, duration: 0.7, ease }}
-        className={clsx("relative h-px flex-1", left ? "origin-left bg-gradient-to-r" : "origin-right bg-gradient-to-l", "from-white/5 to-fg/50")}
+        className={clsx("relative h-px flex-1", left ? "origin-left bg-gradient-to-r" : "origin-right bg-gradient-to-l", "from-fg/5 to-fg/50")}
       >
         <span className={clsx("absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-accent", left ? "-right-0.5" : "-left-0.5")} />
         <span className={clsx("absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-accent/50", left ? "-right-2" : "-left-2")} />

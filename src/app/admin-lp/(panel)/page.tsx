@@ -10,10 +10,10 @@ export default async function Dashboard() {
   const db = await readDB();
   const today = summarize(db.sales.filter((s) => inPeriod(s.date, "hoy")));
   const month = summarize(db.sales.filter((s) => inPeriod(s.date, "mes")));
-  const low = db.products.filter((p) => p.stock <= 1).sort((a, b) => a.stock - b.stock);
+  const low = db.products.filter((p) => p.stock <= 1 && !p.priceOnRequest).sort((a, b) => a.stock - b.stock);
   const noPhoto = db.products.filter((p) => p.visible && p.images.length === 0).length;
   const status = openStatus(db.settings.hours);
-  const stockValue = db.products.reduce((s, p) => s + p.stock * (p.cost ?? 0), 0);
+  const stockValue = db.products.reduce((s, p) => s + p.stock * (p.cost ?? 0) * (p.currency === "USD" ? db.settings.usdRate : 1), 0);
 
   return (
     <>
@@ -30,7 +30,7 @@ export default async function Dashboard() {
         <Stat label="Vendido hoy" value={money(today.total)} sub={`${today.count} ventas`} />
         <Stat label="Vendido este mes" value={money(month.total)} sub={`${month.units} unidades`} />
         <Stat label="Ganancia del mes" value={money(month.profit)} sub="Según costos cargados" />
-        <Stat label="Mercadería en stock" value={money(stockValue)} sub="A precio de costo" />
+        <Stat label="Mercadería en stock" value={money(stockValue)} sub={`A costo · dólar a ${money(db.settings.usdRate)}`} />
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">

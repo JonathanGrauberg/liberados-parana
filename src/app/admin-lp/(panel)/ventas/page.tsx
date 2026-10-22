@@ -8,7 +8,7 @@ export default async function Sales({ searchParams }: PageProps<"/admin-lp/venta
   return (
     <>
       <PageTitle title="Ventas y stock" subtitle="Lo que salió, a cuánto salió y lo que entró." />
-      <SalesPanel products={db.products} sales={db.sales} moves={db.moves.slice(0, 200)} startOpen={nueva === "1"} />
+      <SalesPanel products={db.products} sales={db.sales} moves={db.moves.slice(0, 200)} startOpen={nueva === "1"} usdRate={db.settings.usdRate} />
     </>
   );
 }

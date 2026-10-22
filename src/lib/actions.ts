@@ -40,7 +40,7 @@ export async function saveProduct(input: ProductInput) {
     const clean = {
       ...input,
       name: input.name.trim(),
-      price: Math.max(0, Number(input.price) || 0),
+      price: Math.max(0, Number(input.price) || Number(input.cashPrice) || 0),
       stock: Math.max(0, Math.floor(Number(input.stock) || 0)),
       specs: input.specs.filter((s) => s.label.trim() && s.value.trim()),
     };
@@ -113,7 +113,7 @@ export async function registerSale(input: SaleInput) {
       const p = db.products.find((x) => x.id === it.productId);
       if (!p || it.qty <= 0) continue;
       if (p.stock < it.qty) return { error: `No hay stock suficiente de ${p.name} (quedan ${p.stock})` };
-      items.push({ productId: p.id, name: p.name, qty: it.qty, unitPrice: it.unitPrice, unitCost: p.cost });
+      items.push({ productId: p.id, name: p.name, qty: it.qty, unitPrice: it.unitPrice, unitCost: p.cost, currency: p.currency });
     }
     if (!items.length) return { error: "Agregá al menos un producto" };
     for (const it of items) {
@@ -121,7 +121,9 @@ export async function registerSale(input: SaleInput) {
       p.stock -= it.qty;
       db.moves.unshift(move(p.id, p.name, -it.qty, "venta", undefined, saleId));
     }
-    const gross = items.reduce((s, i) => s + i.qty * i.unitPrice, 0);
+    // todo se totaliza en pesos con la cotización del día
+    const rate = db.settings.usdRate;
+    const gross = items.reduce((s, i) => s + i.qty * i.unitPrice * (i.currency === "USD" ? rate : 1), 0);
     const tradeIn = input.tradeIn?.value ? input.tradeIn : undefined;
     db.sales.unshift({
       id: saleId,
@@ -129,7 +131,8 @@ export async function registerSale(input: SaleInput) {
       items,
       payment: input.payment,
       tradeIn,
-      total: Math.max(0, gross - (tradeIn?.value ?? 0)),
+      total: Math.round(Math.max(0, gross - (tradeIn?.value ?? 0))),
+      usdRate: rate,
       note: input.note?.trim() || undefined,
     });
     return { ok: true as const };

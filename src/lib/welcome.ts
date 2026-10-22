@@ -18,12 +18,12 @@ export const WELCOME_ACTIONS = {
 export const defaultWelcome: WelcomePopup = {
   enabled: true,
   theme: "dark",
-  eyebrow: "Solo esta semana",
-  title: "iPhone 15 −8%",
-  text: "Nuevo sellado, liberado y con garantía. Hasta 12 cuotas o entregando tu usado.",
-  cta: "Ver oferta",
+  eyebrow: "Usados seleccionados",
+  title: "iPhone 15 · 128 GB",
+  text: "Batería al 100 %, revisado y liberado. U$S 550 en efectivo o entregando tu usado.",
+  cta: "Ver equipo",
   action: "producto",
-  productId: "iphone-15-128",
+  productId: "iphone-15-128-gb-black-usado",
   version: 1,
 };
 

@@ -5,7 +5,7 @@ import { ArrowRight, Search } from "lucide-react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "motion/react";
 import { useEffect, useId, useRef, useState } from "react";
 import { conditions } from "@/brand.config";
-import { money } from "@/lib/format";
+import { inCurrency } from "@/lib/format";
 import { ProductVisual } from "./ProductVisual";
 import { useSite } from "./SiteContext";
 
@@ -54,7 +54,7 @@ export function Hero() {
         style={{ y: bgY, scale: bgScale }}
         className="absolute inset-0 h-full w-full object-cover object-[50%_40%] opacity-[.1] grayscale"
       />
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,11,14,.6),var(--ink)_70%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,color-mix(in_srgb,var(--ink)_60%,transparent),var(--ink)_70%)]" />
 
       <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-5 md:px-8 lg:grid-cols-[1fr_1.05fr]">
         {/* Texto */}
@@ -182,7 +182,7 @@ export function Hero() {
               >
                 <span className="eyebrow block !text-[10px]">{conditions[cur.condition].label}</span>
                 <span className="title-lux mt-1 block text-lg !font-medium">{cur.name}</span>
-                <span className="block text-sm text-muted">{money(cur.price)}</span>
+                <span className="block text-sm text-muted">{[cur.storage, cur.priceOnRequest ? "Consultá precio" : inCurrency(cur.cashPrice || cur.price, cur.currency)].filter(Boolean).join(" · ")}</span>
               </motion.button>
             </AnimatePresence>
 
@@ -202,7 +202,7 @@ export function Hero() {
                         aria-current={active}
                         className={clsx(
                           "relative h-11 w-11 overflow-hidden border transition duration-500",
-                          active ? "border-line-strong bg-white/[.04]" : "border-line opacity-45 hover:opacity-90",
+                          active ? "border-line-strong bg-fg/[.04]" : "border-line opacity-45 hover:opacity-90",
                         )}
                       >
                         <span className="absolute inset-1.5 block">
@@ -238,26 +238,26 @@ function Pedestal() {
       {/* luz cenital */}
       <div
         className="absolute bottom-[55%] left-1/2 h-[260%] w-[60%] -translate-x-1/2 opacity-[.07]"
-        style={{ background: "linear-gradient(to top, #fff, transparent 85%)", clipPath: "polygon(22% 100%, 78% 100%, 100% 0, 0 0)", filter: "blur(16px)" }}
+        style={{ background: "linear-gradient(to top, var(--fg), transparent 85%)", clipPath: "polygon(22% 100%, 78% 100%, 100% 0, 0 0)", filter: "blur(16px)" }}
       />
-      <div className="absolute -bottom-[30%] left-1/2 h-[60%] w-[110%] -translate-x-1/2 rounded-[50%] bg-black/80 blur-2xl" />
+      <div className="absolute -bottom-[30%] left-1/2 h-[60%] w-[110%] -translate-x-1/2 rounded-[50%] bg-black/80 blur-2xl light:bg-black/25" />
       <svg viewBox="0 0 400 112" className="relative block w-full overflow-visible" aria-hidden>
         <defs>
           <linearGradient id={`side${id}`} x1="0" x2="1">
-            <stop offset="0" stopColor="#0c0c0f" />
-            <stop offset=".45" stopColor="#24242a" />
-            <stop offset="1" stopColor="#0c0c0f" />
+            <stop offset="0" style={{ stopColor: "var(--ped-edge)" }} />
+            <stop offset=".45" style={{ stopColor: "var(--ped-mid)" }} />
+            <stop offset="1" style={{ stopColor: "var(--ped-edge)" }} />
           </linearGradient>
           <radialGradient id={`top${id}`} cx=".5" cy=".3" r=".75">
-            <stop offset="0" stopColor="#2a2a31" />
-            <stop offset="1" stopColor="#141418" />
+            <stop offset="0" style={{ stopColor: "var(--ped-top-1)" }} />
+            <stop offset="1" style={{ stopColor: "var(--ped-top-2)" }} />
           </radialGradient>
         </defs>
         {/* lateral: el borde de abajo es media elipse, sin esquinas */}
         <path d="M2 40 V72 A198 38 0 0 0 398 72 V40 Z" fill={`url(#side${id})`} />
         <ellipse cx="200" cy="40" rx="198" ry="38" fill={`url(#top${id})`} />
-        <ellipse cx="200" cy="40" rx="198" ry="38" fill="none" stroke="#fff" strokeOpacity=".22" strokeWidth="1" />
-        <ellipse cx="200" cy="40" rx="140" ry="25" fill="none" stroke="#fff" strokeOpacity=".06" />
+        <ellipse cx="200" cy="40" rx="198" ry="38" fill="none" style={{ stroke: "var(--ped-rim)" }} strokeWidth="1" />
+        <ellipse cx="200" cy="40" rx="140" ry="25" fill="none" style={{ stroke: "var(--ped-rim)" }} strokeOpacity=".3" />
       </svg>
     </div>
   );

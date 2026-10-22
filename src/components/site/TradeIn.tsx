@@ -3,7 +3,8 @@
 import clsx from "clsx";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
-import { money, waLink } from "@/lib/format";
+import { inCurrency, money, toArs, usd, waLink } from "@/lib/format";
+import { priceText } from "./Price";
 import { WhatsAppIcon } from "./icons";
 import { Reveal } from "./Reveal";
 import { useSite } from "./SiteContext";
@@ -23,7 +24,8 @@ const BATTERY = [
 export function TradeIn() {
   const { settings, products, tradeTarget } = useSite();
   const models = settings.tradeIn.models;
-  const phones = products.filter((p) => p.category === "celulares" && p.stock > 0);
+  const phones = products.filter((p) => p.category === "celulares" && p.stock > 0 && !p.priceOnRequest);
+  const rate = settings.usdRate;
 
   const [model, setModel] = useState<string>("");
   const [state, setState] = useState<string>("");
@@ -38,17 +40,19 @@ export function TradeIn() {
   const s = STATES.find((x) => x.id === state);
   const b = BATTERY.find((x) => x.id === battery);
   const t = phones.find((x) => x.id === target);
-  const estimate = useMemo(() => (m && s && b ? Math.round((m.value * s.factor * b.factor) / 1000) * 1000 : 0), [m, s, b]);
+  // valores de canje en dólares, redondeados de a 5
+  const estimate = useMemo(() => (m && s && b ? Math.round((m.value * s.factor * b.factor) / 5) * 5 : 0), [m, s, b]);
   const unknownModel = m && m.value === 0;
-  const diff = t ? Math.max(0, t.price - estimate) : 0;
+  const lead = t ? t.cashPrice || t.price : 0;
+  const diff = !t ? 0 : t.currency === "USD" ? Math.max(0, lead - estimate) : Math.max(0, lead - toArs(estimate, "USD", rate));
 
   const message = [
     "¡Hola Liberados! Quiero cotizar mi usado con el Plan Canje:",
     m && `• Mi equipo: ${m.name}`,
     s && `• Estado: ${s.label}`,
     b && `• Batería: ${b.label}`,
-    estimate ? `• Estimado web: ${money(estimate)}` : null,
-    t && `• Me interesa: ${t.name}${t.storage ? " " + t.storage : ""} (${money(t.price)})`,
+    estimate ? `• Estimado web: ${usd(estimate)}` : null,
+    t && `• Me interesa: ${t.name}${t.storage ? " " + t.storage : ""} (${priceText(t)})`,
   ]
     .filter(Boolean)
     .join("\n");
@@ -69,7 +73,7 @@ export function TradeIn() {
             </p>
           </Reveal>
 
-          <ResultCard estimate={estimate} unknownModel={!!unknownModel} target={t} diff={diff} ready={!!(m && s && b)} />
+          <ResultCard estimate={estimate} unknownModel={!!unknownModel} target={t} diff={diff} rate={rate} ready={!!(m && s && b)} />
 
           <a
             href={waLink(settings.contact.whatsapp, message)}
@@ -125,7 +129,7 @@ export function TradeIn() {
                       <span className="block font-normal">{x.name}</span>
                       <span className="block text-sm opacity-60">{[x.storage, x.colorName].filter(Boolean).join(" · ")}</span>
                     </span>
-                    <span className="font-display shrink-0 font-light">{money(x.price)}</span>
+                    <span className="font-display shrink-0 font-light">{inCurrency(x.cashPrice || x.price, x.currency)}</span>
                   </span>
                 </Option>
               ))}
@@ -137,7 +141,22 @@ export function TradeIn() {
   );
 }
 
-function ResultCard({ estimate, unknownModel, target, diff, ready }: { estimate: number; unknownModel: boolean; target?: { name: string }; diff: number; ready: boolean }) {
+function ResultCard({
+  estimate,
+  unknownModel,
+  target,
+  diff,
+  rate,
+  ready,
+}: {
+  estimate: number;
+  unknownModel: boolean;
+  target?: { name: string; currency: "USD" | "ARS" };
+  diff: number;
+  rate: number;
+  ready: boolean;
+}) {
+  const diffUsd = target?.currency === "USD";
   return (
     <div className="mt-10 border border-line p-7">
       {unknownModel ? (
@@ -145,11 +164,13 @@ function ResultCard({ estimate, unknownModel, target, diff, ready }: { estimate:
       ) : (
         <>
           <p className="text-muted">{ready ? "Te tomamos tu equipo en hasta" : "Completá los pasos para ver el valor"}</p>
-          <Counter value={estimate} className="font-display mt-1 text-[clamp(44px,5.5vw,64px)] font-light leading-none tracking-tight" />
+          <Counter value={estimate} format={usd} className="font-display mt-1 text-[clamp(44px,5.5vw,64px)] font-light leading-none tracking-tight" />
+          {ready && rate > 0 && <p className="mt-1 text-sm text-muted">≈ {money(toArs(estimate, "USD", rate))}</p>}
           {target && ready && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5 border-t border-line pt-5">
               <p className="text-muted">Para llevarte el {target.name} pagás</p>
-              <Counter value={diff} className="font-display mt-1 text-4xl font-normal text-accent" />
+              <Counter value={diff} format={diffUsd ? usd : money} className="font-display mt-1 text-4xl font-normal text-accent" />
+              {diffUsd && rate > 0 && <p className="mt-1 text-sm text-muted">≈ {money(toArs(diff, "USD", rate))} en efectivo</p>}
             </motion.div>
           )}
         </>
@@ -158,9 +179,9 @@ function ResultCard({ estimate, unknownModel, target, diff, ready }: { estimate:
   );
 }
 
-function Counter({ value, className }: { value: number; className?: string }) {
+function Counter({ value, className, format }: { value: number; className?: string; format: (n: number) => string }) {
   const mv = useMotionValue(0);
-  const text = useTransform(mv, (v) => money(v));
+  const text = useTransform(mv, (v) => format(v));
   useEffect(() => {
     const c = animate(mv, value, { duration: 1, ease: [0.22, 1, 0.36, 1] });
     return () => c.stop();

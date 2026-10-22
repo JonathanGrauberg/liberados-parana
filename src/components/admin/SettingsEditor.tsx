@@ -19,9 +19,10 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
 
   return (
     <div className="space-y-6">
+      <DollarCard initial={settings.usdRate} updatedAt={settings.usdRateUpdatedAt} />
       <Card className="space-y-4">
-        <h2 className="font-display text-xl font-bold">Plan canje: cuánto tomamos cada equipo</h2>
-        <p className="text-sm text-text-mute">Es el valor máximo (equipo impecable, batería 85 % o más). La web descuenta según el estado que elige el cliente. Si ponés 0, se cotiza por WhatsApp.</p>
+        <h2 className="font-display text-xl font-bold">Plan canje: cuánto tomamos cada equipo (U$S)</h2>
+        <p className="text-sm text-text-mute">Es el valor máximo en dólares (equipo impecable, batería 85 % o más). La web descuenta según el estado que elige el cliente. Si ponés 0, se cotiza por WhatsApp.</p>
         <div className="space-y-2">
           {s.tradeIn.models.map((m, i) => (
             <div key={m.id} className="flex gap-2">
@@ -59,5 +60,39 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
         </Button>
       </div>
     </div>
+  );
+}
+
+/** Cotización del dólar: la web la usa para mostrar el precio en pesos de los equipos en dólares. */
+function DollarCard({ initial, updatedAt }: { initial: number; updatedAt?: string }) {
+  const [rate, setRate] = useState(initial);
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
+  return (
+    <Card className="space-y-4">
+      <div>
+        <h2 className="font-display text-xl font-bold">Cotización del dólar</h2>
+        <p className="text-sm text-text-mute">
+          Con este valor la web muestra el precio en pesos de los equipos cargados en dólares, y el panel pasa las ventas a pesos.
+          {updatedAt && ` Última actualización: ${new Date(updatedAt).toLocaleString("es-AR", { timeZone: "America/Argentina/Buenos_Aires", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}.`}
+        </p>
+      </div>
+      <div className="flex flex-wrap items-end gap-3">
+        <Field label="1 U$S =" className="w-48">
+          <Input
+            inputMode="numeric"
+            value={rate ? rate.toLocaleString("es-AR") : ""}
+            onChange={(e) => {
+              setSaved(false);
+              setRate(Number(e.target.value.replace(/\D/g, "")) || 0);
+            }}
+            className="font-display text-xl font-bold"
+          />
+        </Field>
+        <Button variant="brand" className="h-12" disabled={pending || rate <= 0} onClick={() => start(async () => { await saveSettings({ usdRate: rate, usdRateUpdatedAt: new Date().toISOString() }); setSaved(true); })}>
+          {saved ? <><Check className="h-5 w-5" /> Guardado</> : pending ? "Guardando…" : "Actualizar"}
+        </Button>
+      </div>
+    </Card>
   );
 }

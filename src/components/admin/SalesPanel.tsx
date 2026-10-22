@@ -5,7 +5,7 @@ import { ArrowLeftRight, PackagePlus, Plus, Receipt, Trash2, X } from "lucide-re
 import { AnimatePresence, motion } from "motion/react";
 import { useMemo, useState, useTransition } from "react";
 import { addStock, deleteSale, registerSale } from "@/lib/actions";
-import { dateTime, money } from "@/lib/format";
+import { dateTime, inCurrency, money, usd } from "@/lib/format";
 import { inPeriod, summarize, type Period } from "@/lib/stats";
 import type { PaymentMethod, Product, Sale, StockMove } from "@/lib/types";
 import { Button, Card, Field, Input, Select, Stat } from "./ui";
@@ -19,7 +19,7 @@ const PAYMENTS: [PaymentMethod, string][] = [
 ];
 const REASON: Record<StockMove["reason"], string> = { venta: "Venta", ingreso: "Ingreso", ajuste: "Ajuste", canje: "Canje" };
 
-export function SalesPanel({ products, sales, moves, startOpen }: { products: Product[]; sales: Sale[]; moves: StockMove[]; startOpen: boolean }) {
+export function SalesPanel({ products, sales, moves, startOpen, usdRate }: { products: Product[]; sales: Sale[]; moves: StockMove[]; startOpen: boolean; usdRate: number }) {
   const [period, setPeriod] = useState<Period>("hoy");
   const [tab, setTab] = useState<"ventas" | "movimientos">("ventas");
   const [modal, setModal] = useState<"venta" | "ingreso" | null>(startOpen ? "venta" : null);
@@ -79,7 +79,7 @@ export function SalesPanel({ products, sales, moves, startOpen }: { products: Pr
                 <div className="min-w-0">
                   {s.items.map((i) => (
                     <p key={i.productId} className="font-semibold">
-                      {i.qty}× {i.name} <span className="font-normal text-text-mute">a {money(i.unitPrice)}</span>
+                      {i.qty}× {i.name} <span className="font-normal text-text-mute">a {inCurrency(i.unitPrice, i.currency)}</span>
                     </p>
                   ))}
                   {s.tradeIn && (
@@ -128,7 +128,7 @@ export function SalesPanel({ products, sales, moves, startOpen }: { products: Pr
         {modal && (
           <Sheet onClose={() => setModal(null)} title={modal === "venta" ? "Nueva venta" : "Entró mercadería"}>
             {modal === "venta" ? (
-              <SaleForm products={products} onDone={() => setModal(null)} />
+              <SaleForm products={products} rate={usdRate} onDone={() => setModal(null)} />
             ) : (
               <StockForm products={products} onDone={() => setModal(null)} />
             )}
@@ -162,7 +162,7 @@ function Sheet({ title, onClose, children }: { title: string; onClose: () => voi
 
 type Line = { productId: string; qty: number; unitPrice: number };
 
-function SaleForm({ products, onDone }: { products: Product[]; onDone: () => void }) {
+function SaleForm({ products, rate, onDone }: { products: Product[]; rate: number; onDone: () => void }) {
   const [lines, setLines] = useState<Line[]>([]);
   const [pick, setPick] = useState("");
   const [payment, setPayment] = useState<PaymentMethod>("efectivo");
@@ -174,13 +174,16 @@ function SaleForm({ products, onDone }: { products: Product[]; onDone: () => voi
   const [pending, start] = useTransition();
   const byId = (id: string) => products.find((p) => p.id === id)!;
   const available = products.filter((p) => p.stock > 0 && !lines.some((l) => l.productId === p.id));
-  const gross = lines.reduce((s, l) => s + l.qty * l.unitPrice, 0);
+  // todo en pesos con la cotización del día
+  const curOf = (id: string) => byId(id).currency;
+  const gross = Math.round(lines.reduce((s, l) => s + l.qty * l.unitPrice * (curOf(l.productId) === "USD" ? rate : 1), 0));
+  const usdLines = lines.filter((l) => curOf(l.productId) === "USD").reduce((s, l) => s + l.qty * l.unitPrice, 0);
   const total = Math.max(0, gross - (trade ? tradeValue : 0));
   const num = (v: string) => Number(v.replace(/\D/g, "")) || 0;
 
   function add(id: string) {
     const p = byId(id);
-    if (p) setLines((l) => [...l, { productId: id, qty: 1, unitPrice: p.price }]);
+    if (p) setLines((l) => [...l, { productId: id, qty: 1, unitPrice: p.cashPrice || p.price }]);
     setPick("");
   }
 
@@ -205,7 +208,7 @@ function SaleForm({ products, onDone }: { products: Product[]; onDone: () => voi
           <option value="">Elegí un producto…</option>
           {available.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} {p.storage ?? ""} — {money(p.price)} (stock {p.stock})
+              {p.name} {p.storage ?? ""} {p.colorName ?? ""} — {p.priceOnRequest ? "a consultar" : inCurrency(p.cashPrice || p.price, p.currency)} (stock {p.stock})
             </option>
           ))}
         </Select>
@@ -223,7 +226,10 @@ function SaleForm({ products, onDone }: { products: Product[]; onDone: () => voi
               <Field label="Cantidad">
                 <Input type="number" min={1} max={p.stock} value={l.qty} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, qty: Math.min(p.stock, Math.max(1, Number(e.target.value))) } : x)))} />
               </Field>
-              <Field label="Precio unitario ($)" hint={l.unitPrice !== p.price ? `Precio de lista: ${money(p.price)}` : undefined}>
+              <Field
+                label={`Precio unitario (${p.currency === "USD" ? "U$S" : "$"})`}
+                hint={[p.cashPrice && `Efectivo ${inCurrency(p.cashPrice, p.currency)}`, `Lista ${inCurrency(p.price, p.currency)}`].filter(Boolean).join(" · ")}
+              >
                 <Input inputMode="numeric" value={l.unitPrice.toLocaleString("es-AR")} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, unitPrice: num(e.target.value) } : x)))} />
               </Field>
             </div>
@@ -261,6 +267,11 @@ function SaleForm({ products, onDone }: { products: Product[]; onDone: () => voi
           <p className="flex justify-between text-violet"><span>Canje</span><span>−{money(tradeValue)}</span></p>
         )}
         <p className="font-display flex justify-between text-2xl font-bold"><span>Cobrás</span><span>{money(total)}</span></p>
+        {usdLines > 0 && (
+          <p className="mt-1 text-right text-sm text-text-mute">
+            Equipos en dólares: {usd(usdLines)} (dólar a {money(rate)})
+          </p>
+        )}
       </div>
 
       {error && <p className="rounded-xl bg-red-50 px-4 py-3 text-red-700">{error}</p>}

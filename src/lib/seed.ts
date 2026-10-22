@@ -6,6 +6,7 @@ const now = new Date().toISOString();
 function p(partial: Partial<Product> & Pick<Product, "id" | "name" | "brand" | "category" | "condition" | "price" | "color">): Product {
   return {
     slug: partial.id,
+    currency: "ARS",
     stock: 3,
     description: "",
     specs: [],
@@ -18,104 +19,90 @@ function p(partial: Partial<Product> & Pick<Product, "id" | "name" | "brand" | "
   };
 }
 
-export const seed: DB = {
-  products: [
-    p({
-      id: "iphone-15-128",
-      name: "iPhone 15",
-      brand: "Apple",
-      category: "celulares",
-      condition: "sellado",
-      price: 1_399_000,
-      comparePrice: 1_520_000,
-      cost: 1_150_000,
-      installments: { count: 12, amount: 153_000 },
-      stock: 5,
-      color: "#f3c6d3",
-      colorName: "Rosa",
-      storage: "128 GB",
-      description: "Dynamic Island, cámara de 48 MP y USB‑C. Nuevo, sellado, liberado para cualquier compañía.",
-      specs: [
-        { label: "Pantalla", value: "6,1\" Super Retina XDR" },
-        { label: "Chip", value: "A16 Bionic" },
-        { label: "Cámara", value: "48 MP + 12 MP" },
-        { label: "Garantía", value: "12 meses" },
-      ],
-      featured: true,
-    }),
-    p({
-      id: "iphone-14-pro-usado",
-      name: "iPhone 14 Pro",
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+const FEATURED = new Set(["15", "14 Pro", "13 Pro", "11"]);
+
+type Usado = [modelo: string, capacidad: string, color: string, hex: string, bateria: number, efectivo: number, lista: number, proveedor: string];
+
+function usados(rows: Usado[]): Product[] {
+  const seen = new Set<string>();
+  return rows.map(([modelo, cap, color, hex, bat, cash, list, supplier]) => {
+    const id = slug(`iphone ${modelo} ${cap} ${color} usado`);
+    const featured = FEATURED.has(modelo) && !seen.has(modelo);
+    seen.add(modelo);
+    return p({
+      id,
+      name: `iPhone ${modelo}`,
       brand: "Apple",
       category: "celulares",
       condition: "usado",
-      price: 1_090_000,
-      cost: 880_000,
+      currency: "USD",
+      price: list,
+      cashPrice: cash,
+      supplier,
       stock: 1,
-      color: "#5b4b72",
-      colorName: "Morado oscuro",
-      storage: "256 GB",
-      battery: 89,
-      description: "Impecable, sin marcas. Revisado por nuestro técnico, con caja y cable.",
+      color: hex,
+      colorName: color,
+      storage: cap,
+      battery: bat,
+      description: `Usado seleccionado, batería al ${bat} %. Revisado y liberado para cualquier compañía.`,
+      specs: [{ label: "Estado", value: "Usado seleccionado" }],
+      featured,
+    });
+  });
+}
+
+function nuevos(rows: [modelo: string, capacidad: string][]): Product[] {
+  return rows.map(([modelo, cap]) =>
+    p({
+      id: slug(`iphone ${modelo} ${cap} nuevo`),
+      name: `iPhone ${modelo}`,
+      brand: "Apple",
+      category: "celulares",
+      condition: "sellado",
+      currency: "USD",
+      price: 0,
+      priceOnRequest: true,
+      stock: 0,
+      color: "#c9cbd1",
+      storage: cap,
+      description: "Nuevo, en caja, con garantía de 1 año. Consultanos precio y colores disponibles.",
       specs: [
-        { label: "Batería", value: "89 %" },
-        { label: "Estado", value: "10/10" },
-        { label: "Garantía", value: "3 meses" },
+        { label: "Estado", value: "Nuevo en caja" },
+        { label: "Garantía", value: "1 año" },
       ],
-      featured: true,
     }),
-    p({
-      id: "galaxy-s24",
-      name: "Galaxy S24",
-      brand: "Samsung",
-      category: "celulares",
-      condition: "nuevo",
-      price: 1_249_000,
-      cost: 1_020_000,
-      installments: { count: 6, amount: 229_000 },
-      stock: 4,
-      color: "#c9cfe0",
-      colorName: "Gris perla",
-      storage: "256 GB",
-      description: "Galaxy AI, pantalla de 120 Hz y cámara nocturna increíble.",
-      specs: [
-        { label: "Pantalla", value: "6,2\" Dynamic AMOLED 2X" },
-        { label: "Memoria", value: "8 GB RAM" },
-        { label: "Cámara", value: "50 MP triple" },
-      ],
-      featured: true,
-    }),
-    p({
-      id: "moto-g84",
-      name: "Moto G84",
-      brand: "Motorola",
-      category: "celulares",
-      condition: "nuevo",
-      price: 459_000,
-      cost: 360_000,
-      installments: { count: 12, amount: 49_900 },
-      stock: 8,
-      color: "#2c5a7a",
-      colorName: "Azul marino",
-      storage: "256 GB",
-      description: "Pantalla pOLED, batería de 5000 mAh y sonido Dolby Atmos.",
-      specs: [{ label: "Batería", value: "5000 mAh" }],
-    }),
-    p({
-      id: "redmi-note-13",
-      name: "Redmi Note 13",
-      brand: "Xiaomi",
-      category: "celulares",
-      condition: "nuevo",
-      price: 389_000,
-      cost: 300_000,
-      stock: 2,
-      color: "#9dd6c4",
-      colorName: "Verde menta",
-      storage: "128 GB",
-      description: "Cámara de 108 MP y carga rápida de 33 W.",
-      specs: [],
-    }),
+  );
+}
+
+export const seed: DB = {
+  products: [
+    /* ── iPhone usados seleccionados (lista del local) ── */
+    ...usados([
+      ["11", "64 GB", "Black", "#2b2b2e", 100, 280, 380, "Ikings"],
+      ["11", "128 GB", "Black", "#2b2b2e", 100, 300, 400, "Rudi"],
+      ["13", "128 GB", "Midnight", "#232a35", 89, 410, 510, "Rudi"],
+      ["13", "256 GB", "Midnight", "#232a35", 100, 490, 590, "Ikings"],
+      ["13 Pro", "128 GB", "Graphite", "#4a4a4f", 98, 530, 630, "Canje"],
+      ["13 Pro", "128 GB", "Green", "#4f6b5a", 100, 550, 650, "Rudi"],
+      ["14", "128 GB", "Blue", "#a9c3db", 100, 490, 590, "Facundo"],
+      ["14 Pro", "128 GB", "Black", "#2f2e33", 100, 565, 665, "Facundo"],
+      ["15", "128 GB", "Black", "#35363a", 100, 550, 650, "Facundo"],
+    ]),
+    /* ── iPhone nuevos, en caja, garantía 1 año: precio y stock a consultar ── */
+    ...nuevos([
+      ["13", "128 GB"],
+      ["15", "128 GB"],
+      ["16", "128 GB"],
+      ["17", "256 GB"],
+      ["17 Air", "256 GB"],
+      ["17 Pro", "256 GB"],
+      ["17 Pro", "512 GB"],
+      ["17 Pro Max", "256 GB"],
+      ["17 Pro Max", "512 GB"],
+    ]),
+    /* ── Ejemplos de otras categorías (reemplazar por los reales) ── */
     p({
       id: "airpods-pro-2",
       name: "AirPods Pro (2.ª gen.)",
@@ -227,20 +214,22 @@ export const seed: DB = {
       { open: true, ranges: [{ from: "09:00", to: "13:00" }] },
     ],
     hoursNote: "",
+    usdRate: 1450,
     tradeIn: {
       note: "Valor estimado. Lo confirmamos al revisar el equipo en el local.",
+      // valores de ejemplo, en dólares: el local los ajusta en el panel
       models: [
-        { id: "ip11", name: "iPhone 11", value: 260_000 },
-        { id: "ip12", name: "iPhone 12", value: 360_000 },
-        { id: "ip13", name: "iPhone 13", value: 480_000 },
-        { id: "ip13p", name: "iPhone 13 Pro", value: 590_000 },
-        { id: "ip14", name: "iPhone 14", value: 620_000 },
-        { id: "ip14p", name: "iPhone 14 Pro", value: 780_000 },
-        { id: "ip15", name: "iPhone 15", value: 850_000 },
-        { id: "s22", name: "Samsung Galaxy S22", value: 330_000 },
-        { id: "s23", name: "Samsung Galaxy S23", value: 470_000 },
-        { id: "a54", name: "Samsung Galaxy A54", value: 190_000 },
-        { id: "g54", name: "Motorola G54", value: 120_000 },
+        { id: "ip11", name: "iPhone 11", value: 180 },
+        { id: "ip12", name: "iPhone 12", value: 240 },
+        { id: "ip13", name: "iPhone 13", value: 320 },
+        { id: "ip13p", name: "iPhone 13 Pro", value: 400 },
+        { id: "ip14", name: "iPhone 14", value: 380 },
+        { id: "ip14p", name: "iPhone 14 Pro", value: 460 },
+        { id: "ip15", name: "iPhone 15", value: 440 },
+        { id: "s22", name: "Samsung Galaxy S22", value: 180 },
+        { id: "s23", name: "Samsung Galaxy S23", value: 260 },
+        { id: "a54", name: "Samsung Galaxy A54", value: 110 },
+        { id: "g54", name: "Motorola G54", value: 70 },
         { id: "otro", name: "Otro modelo", value: 0 },
       ],
     },

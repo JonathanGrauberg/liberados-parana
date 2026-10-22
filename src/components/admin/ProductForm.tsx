@@ -1,12 +1,13 @@
 "use client";
 
+import clsx from "clsx";
 import { Plus, Save, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { categories, conditions, type CategoryId, type Condition } from "@/brand.config";
 import { deleteProduct, saveProduct, type ProductInput } from "@/lib/actions";
-import { money } from "@/lib/format";
+import { inCurrency, money, toArs } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { ImageManager } from "./ImageManager";
 import { Button, Card, Field, Input, Select, Textarea, Toggle } from "./ui";
@@ -16,6 +17,7 @@ const empty: ProductInput = {
   brand: "",
   category: "celulares",
   condition: "nuevo",
+  currency: "USD",
   price: 0,
   stock: 1,
   color: "#7b7fdc",
@@ -26,7 +28,7 @@ const empty: ProductInput = {
   visible: true,
 };
 
-export function ProductForm({ product }: { product?: Product }) {
+export function ProductForm({ product, usdRate, suppliers }: { product?: Product; usdRate: number; suppliers: string[] }) {
   const router = useRouter();
   const [p, setP] = useState<ProductInput>(product ?? empty);
   const [pending, start] = useTransition();
@@ -34,11 +36,15 @@ export function ProductForm({ product }: { product?: Product }) {
   const set = <K extends keyof ProductInput>(k: K, v: ProductInput[K]) => setP((x) => ({ ...x, [k]: v }));
   const num = (v: string) => (v === "" ? 0 : Number(v.replace(/\D/g, "")));
 
-  const margin = p.cost && p.price ? Math.round(((p.price - p.cost) / p.price) * 100) : null;
+  const sym = p.currency === "USD" ? "U$S" : "$";
+  const lead = p.cashPrice || p.price;
+  const margin = p.cost && lead && !p.priceOnRequest ? Math.round(((lead - p.cost) / lead) * 100) : null;
+  const hintArs = (n?: number) => (p.currency === "USD" && n ? `≈ ${money(toArs(n, "USD", usdRate))}` : undefined);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!p.name.trim()) return setMsg("Poné el nombre del producto");
+    if (!p.priceOnRequest && !p.price && !p.cashPrice) return setMsg("Cargá un precio o marcá “Precio a consultar”");
     start(async () => {
       await saveProduct(p);
       router.push("/admin-lp/productos?ok=1");
@@ -125,30 +131,62 @@ export function ProductForm({ product }: { product?: Product }) {
       <div className="space-y-6 lg:sticky lg:top-6 lg:self-start">
         <Card className="space-y-4">
           <h2 className="font-display text-xl font-bold">Precio y stock</h2>
-          <Field label="Precio de venta ($)">
-            <Input inputMode="numeric" value={p.price ? p.price.toLocaleString("es-AR") : ""} onChange={(e) => set("price", num(e.target.value))} className="font-display text-xl font-bold" placeholder="0" />
+          <Field label="Moneda">
+            <div className="grid grid-cols-2 gap-2">
+              {(["USD", "ARS"] as const).map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => set("currency", c)}
+                  className={clsx("h-11 rounded-xl border text-[15px] font-semibold transition", p.currency === c ? "border-text-dark bg-text-dark text-white" : "border-black/10 bg-white")}
+                >
+                  {c === "USD" ? "Dólares (U$S)" : "Pesos ($)"}
+                </button>
+              ))}
+            </div>
           </Field>
+          <Toggle checked={!!p.priceOnRequest} onChange={(v) => set("priceOnRequest", v || undefined)} label="Precio a consultar (no se publica)" />
+          {!p.priceOnRequest && (
+            <>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label={`Contado efectivo (${sym})`} hint={hintArs(p.cashPrice)}>
+                  <Input inputMode="numeric" value={p.cashPrice ? p.cashPrice.toLocaleString("es-AR") : ""} onChange={(e) => set("cashPrice", num(e.target.value) || undefined)} className="font-display text-xl font-bold" placeholder="0" />
+                </Field>
+                <Field label={`Lista (${sym})`} hint={hintArs(p.price) ?? "Tarjeta / cuotas"}>
+                  <Input inputMode="numeric" value={p.price ? p.price.toLocaleString("es-AR") : ""} onChange={(e) => set("price", num(e.target.value))} className="font-display text-xl font-bold" placeholder="0" />
+                </Field>
+              </div>
+              <Field label={`Precio anterior (${sym})`} hint="Opcional: se muestra tachado">
+                <Input inputMode="numeric" value={p.comparePrice ? p.comparePrice.toLocaleString("es-AR") : ""} onChange={(e) => set("comparePrice", num(e.target.value) || undefined)} />
+              </Field>
+            </>
+          )}
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Precio anterior" hint="Se muestra tachado">
-              <Input inputMode="numeric" value={p.comparePrice ? p.comparePrice.toLocaleString("es-AR") : ""} onChange={(e) => set("comparePrice", num(e.target.value) || undefined)} />
-            </Field>
-            <Field label="Costo" hint="Privado, no se ve en la web">
+            <Field label={`Costo (${sym})`} hint="Privado, no se ve en la web">
               <Input inputMode="numeric" value={p.cost ? p.cost.toLocaleString("es-AR") : ""} onChange={(e) => set("cost", num(e.target.value) || undefined)} />
+            </Field>
+            <Field label="Proveedor o canje" hint="Privado">
+              <Input value={p.supplier ?? ""} onChange={(e) => set("supplier", e.target.value || undefined)} list="suppliers" placeholder="Ej.: Rudi" />
+              <datalist id="suppliers">
+                {suppliers.map((x) => <option key={x} value={x} />)}
+              </datalist>
             </Field>
           </div>
           {margin !== null && (
             <p className="rounded-xl bg-emerald-50 px-4 py-2.5 text-sm text-emerald-800">
-              Ganás {money(p.price - (p.cost ?? 0))} por unidad ({margin}%)
+              Ganás {inCurrency(lead - (p.cost ?? 0), p.currency)} por unidad en efectivo ({margin}%)
             </p>
           )}
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Cuotas" hint="Cantidad (opcional)">
-              <Input inputMode="numeric" value={p.installments?.count ?? ""} onChange={(e) => { const c = num(e.target.value); set("installments", c ? { count: c, amount: p.installments?.amount ?? Math.round(p.price / c) } : undefined); }} placeholder="12" />
-            </Field>
-            <Field label="Valor de cuota">
-              <Input inputMode="numeric" disabled={!p.installments} value={p.installments?.amount ? p.installments.amount.toLocaleString("es-AR") : ""} onChange={(e) => p.installments && set("installments", { ...p.installments, amount: num(e.target.value) })} />
-            </Field>
-          </div>
+          {!p.priceOnRequest && (
+            <div className="grid grid-cols-2 gap-3">
+              <Field label="Cuotas" hint="Cantidad (opcional)">
+                <Input inputMode="numeric" value={p.installments?.count ?? ""} onChange={(e) => { const c = num(e.target.value); set("installments", c ? { count: c, amount: p.installments?.amount ?? Math.round(toArs(p.price, p.currency, usdRate) / c) } : undefined); }} placeholder="12" />
+              </Field>
+              <Field label="Valor de cuota ($)">
+                <Input inputMode="numeric" disabled={!p.installments} value={p.installments?.amount ? p.installments.amount.toLocaleString("es-AR") : ""} onChange={(e) => p.installments && set("installments", { ...p.installments, amount: num(e.target.value) })} />
+              </Field>
+            </div>
+          )}
           <Field label="Unidades en stock">
             <div className="flex items-center gap-2">
               <Button type="button" variant="ghost" className="w-14 text-xl" onClick={() => set("stock", Math.max(0, p.stock - 1))}>−</Button>

@@ -27,11 +27,11 @@ export function WelcomeCard({
     <div
       className={clsx(
         "relative grid w-full overflow-hidden border font-normal @[520px]:grid-cols-[1fr_1.15fr]",
-        light ? "border-black/10 bg-[#f4f3ef] text-[#141417]" : "border-line bg-ink text-fg",
+        light ? "border-black/10 bg-[#f4f3ef] text-[#141417]" : "border-white/10 bg-[#0b0b0e] text-[#ecebf0]",
       )}
     >
       {/* imagen */}
-      <div className={clsx("relative h-48 @[520px]:h-auto @[520px]:min-h-[340px]", light ? "bg-[#e7e5df]" : "bg-ink-2")}>
+      <div className={clsx("relative h-48 @[520px]:h-auto @[520px]:min-h-[340px]", light ? "bg-[#e7e5df]" : "bg-[#131317]")}>
         {w.image ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={w.image} alt="" className="absolute inset-0 h-full w-full object-cover" />
@@ -49,17 +49,17 @@ export function WelcomeCard({
       {/* texto */}
       <div className="flex flex-col justify-center p-7 @[520px]:p-9">
         {w.eyebrow && (
-          <p className={clsx("font-display text-[11px] uppercase tracking-[0.3em]", light ? "text-[#6b6a72]" : "text-muted")}>{w.eyebrow}</p>
+          <p className={clsx("font-display text-[11px] uppercase tracking-[0.3em]", light ? "text-[#6b6a72]" : "text-[#8b8a93]")}>{w.eyebrow}</p>
         )}
         <h2 className="title-lux mt-3 break-words text-[32px] !font-medium !leading-[1] @[520px]:text-[42px]">{w.title}</h2>
-        {w.text && <p className={clsx("mt-4 text-[15px] leading-relaxed", light ? "text-[#45444b]" : "text-fg/65")}>{w.text}</p>}
+        {w.text && <p className={clsx("mt-4 text-[15px] leading-relaxed", light ? "text-[#45444b]" : "text-[#ecebf0]/65")}>{w.text}</p>}
         {w.cta && (
           <button
             type="button"
             onClick={onCta}
             className={clsx(
               "font-display mt-7 inline-flex min-h-12 w-fit items-center gap-3 px-6 text-[12px] font-medium uppercase tracking-[0.2em] transition",
-              light ? "bg-[#141417] text-white hover:bg-black" : "bg-fg text-ink hover:bg-white",
+              light ? "bg-[#141417] text-white hover:bg-black" : "bg-[#ecebf0] text-[#0b0b0e] hover:bg-white",
             )}
           >
             {w.cta} <ArrowRight className="h-4 w-4" />
@@ -73,7 +73,7 @@ export function WelcomeCard({
         aria-label="Cerrar"
         className={clsx(
           "absolute right-3 top-3 grid h-10 w-10 place-items-center border backdrop-blur transition",
-          light ? "border-black/10 bg-white/60 hover:bg-white" : "border-line bg-ink/60 hover:bg-ink",
+          light ? "border-black/10 bg-white/60 hover:bg-white" : "border-white/10 bg-[#0b0b0e]/60 hover:bg-[#0b0b0e]",
         )}
       >
         <X className="h-4 w-4" strokeWidth={1.5} />

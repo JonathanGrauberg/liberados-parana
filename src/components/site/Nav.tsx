@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { Logo } from "./Logo";
 import { useSite } from "./SiteContext";
 import { SocialButtons } from "./SocialButtons";
+import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
   { href: "#catalogo", label: "Catálogo" },
@@ -79,6 +80,7 @@ export function Nav() {
             <div className="hidden items-center gap-2 sm:flex">
               <SocialButtons size="sm" />
             </div>
+            <ThemeToggle />
             <button
               onClick={() => setMenu((m) => !m)}
               className="grid h-11 w-11 place-items-center text-fg md:hidden"

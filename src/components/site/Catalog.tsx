@@ -6,10 +6,11 @@ import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { categories, conditions, type CategoryId } from "@/brand.config";
 import { discount } from "@/lib/deal";
-import { money } from "@/lib/format";
+import { sortPrice } from "@/lib/format";
 import type { PublicProduct } from "@/lib/types";
 import { ProductVisual } from "./ProductVisual";
 import { SectionHead } from "./SectionHead";
+import { Price } from "./Price";
 import { useSite } from "./SiteContext";
 
 type Cond = "todos" | "nuevos" | "usados";
@@ -18,7 +19,7 @@ type Sort = "destacados" | "menor" | "mayor";
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 export function Catalog() {
-  const { products, category, setCategory, openProduct, query: q, setQuery: setQ } = useSite();
+  const { products, settings, category, setCategory, openProduct, query: q, setQuery: setQ } = useSite();
   const [cond, setCond] = useState<Cond>("todos");
   const [sort, setSort] = useState<Sort>("destacados");
 
@@ -32,11 +33,12 @@ export function Catalog() {
       const hay = norm([p.name, p.brand, p.storage, p.colorName, p.description, categories.find((c) => c.id === p.category)?.label].join(" "));
       return terms.every((t) => hay.includes(t));
     });
-    if (sort === "menor") out.sort((a, b) => a.price - b.price);
-    else if (sort === "mayor") out.sort((a, b) => b.price - a.price);
+    const sp = (x: PublicProduct) => sortPrice(x, settings.usdRate);
+    if (sort === "menor") out.sort((a, b) => sp(a) - sp(b));
+    else if (sort === "mayor") out.sort((a, b) => (sp(b) === Infinity ? -1 : sp(a) === Infinity ? 1 : sp(b) - sp(a)));
     else out.sort((a, b) => Number(b.featured) - Number(a.featured) || Number(b.stock > 0) - Number(a.stock > 0));
     return out;
-  }, [products, category, cond, q, sort]);
+  }, [products, category, cond, q, sort, settings.usdRate]);
 
   const usedCats = categories.filter((c) => products.some((p) => p.category === c.id));
 
@@ -171,7 +173,7 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
           <span className="eyebrow !text-[9.5px] !tracking-[0.22em]">{conditions[p.condition].label}</span>
           {off > 0 && <span className="font-display text-[11px] tracking-[0.1em] text-accent">−{off}%</span>}
         </div>
-        {(out || p.stock <= 2) && (
+        {!p.priceOnRequest && (out || (p.stock <= 2 && p.condition !== "usado")) && (
           <span className={clsx("eyebrow absolute bottom-3 left-3 !text-[9.5px]", !out && "!text-accent")}>{out ? "Sin stock" : "Últimas unidades"}</span>
         )}
       </div>
@@ -180,13 +182,7 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
         <h3 className="mt-0.5 text-[15px] font-normal leading-snug">{p.name}</h3>
         <p className="mt-0.5 line-clamp-1 text-xs text-muted">{[p.storage, p.colorName, p.battery ? `Batería ${p.battery}%` : null].filter(Boolean).join(" · ")}</p>
         <div className="mt-auto pt-3">
-          {p.comparePrice && p.comparePrice > p.price && <p className="text-xs text-muted line-through">{money(p.comparePrice)}</p>}
-          <p className="font-display text-[17px] font-normal tracking-tight">{money(p.price)}</p>
-          {p.installments && (
-            <p className="text-xs text-muted">
-              {p.installments.count} cuotas de {money(p.installments.amount)}
-            </p>
-          )}
+          <Price p={p} />
         </div>
       </div>
       <span className="absolute bottom-0 left-0 h-px w-0 bg-accent transition-all duration-700 group-hover:w-full" />

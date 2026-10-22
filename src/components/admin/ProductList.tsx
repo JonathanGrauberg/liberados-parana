@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useMemo, useOptimistic, useState, useTransition } from "react";
 import { categories, conditions } from "@/brand.config";
 import { addStock, toggleProduct } from "@/lib/actions";
-import { money } from "@/lib/format";
+import { inCurrency } from "@/lib/format";
 import type { Product } from "@/lib/types";
 import { ProductVisual } from "../site/ProductVisual";
 
@@ -67,7 +67,7 @@ export function ProductList({ products }: { products: Product[] }) {
               <div className="min-w-0">
                 <p className="line-clamp-2 font-semibold leading-tight">{p.name} <span className="font-normal text-text-mute">{p.storage}</span></p>
                 <p className="truncate text-sm text-text-mute">
-                  {conditions[p.condition].label} · {money(p.price)}
+                  {conditions[p.condition].label} · {p.priceOnRequest ? "A consultar" : inCurrency(p.cashPrice || p.price, p.currency)}{p.supplier && <span> · {p.supplier}</span>}
                   {p.images.length === 0 && <span className="ml-1 text-amber-600">· sin foto</span>}
                 </p>
               </div>

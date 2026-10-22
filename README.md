@@ -20,13 +20,16 @@ npm run dev -- --port 3210
 - Categorías, oferta de la semana con cuenta regresiva, catálogo con buscador y filtros; ficha con características y flechas (se cargan en el panel).
 - Producto estrella, destacados en galería horizontal, texto que se ilumina al scrollear.
 - Cotizador de Plan Canje (3 preguntas → valor estimado y diferencia a pagar → WhatsApp).
+- Precios en dólares (efectivo y lista) con el equivalente en pesos según la cotización que carga el local; "Consultá precio" para los que no se publican.
+- Modo claro / oscuro a elección del visitante (se recuerda en su navegador).
 - Cartel de bienvenida editable, horarios con "Abierto ahora" (hora de Argentina) y mapa 3D de Argentina que vuela hasta Paraná.
 
 **Panel** (`src/app/admin-lp`) — pensado para usarlo desde el celular
-- Productos: fotos desde la cámara, **quitar fondo con IA en el propio navegador**, color de brillo automático, stock con +/−, visible/destacado.
+- Productos: precio en dólares o pesos (efectivo, lista, a consultar), proveedor interno, fotos desde la cámara, **quitar fondo con IA en el propio navegador**, color de brillo automático, stock con +/−, visible/destacado.
 - Ventas y stock: registrar venta (descuenta stock, admite equipo en canje), ingresos de mercadería, totales por día/semana/mes, ganancia según costo, historial de movimientos.
 - Ofertas: cartel de bienvenida editable (claro/oscuro, textos con límite, se muestra una vez por visitante y otra vez cuando se cambia; `/?cartel=1` lo fuerza) y oferta de la semana.
-- Horarios, aviso especial, valores del plan canje y datos de contacto.
+- Ajustes: cotización del dólar, valores del plan canje (U$S) y contacto. Las ventas se totalizan en pesos con la cotización del día.
+- Horarios y aviso especial.
 
 ## Branding (cuando llegue el manual del diseñador)
 

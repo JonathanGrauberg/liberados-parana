@@ -43,7 +43,7 @@ export function Logo({ className, dark = true }: { className?: string; dark?: bo
   return (
     <span className={clsx("inline-flex items-center gap-2.5", className)}>
       <LogoMark className="h-9 w-9" />
-      <span className={clsx("font-display leading-none", dark ? "text-white" : "text-indigo")}>
+      <span className={clsx("font-display leading-none", dark ? "text-fg" : "text-indigo")}>
         <span className="block text-[15px] font-extrabold tracking-tight">LIBERADOS</span>
         <span className="block text-[9.5px] font-semibold tracking-[0.42em] opacity-80">PARANÁ</span>
       </span>

@@ -19,12 +19,19 @@ let queue: Promise<unknown> = Promise.resolve();
 export async function readDB(): Promise<DB> {
   try {
     const raw = await fs.readFile(DB_FILE, "utf8");
-    return JSON.parse(raw) as DB;
+    return normalize(JSON.parse(raw) as DB);
   } catch {
     await fs.mkdir(UPLOAD_DIR, { recursive: true });
     await fs.writeFile(DB_FILE, JSON.stringify(seed, null, 2));
     return structuredClone(seed);
   }
+}
+
+/** Completa campos nuevos en bases guardadas con versiones anteriores. */
+function normalize(db: DB): DB {
+  for (const p of db.products) p.currency ??= "ARS";
+  db.settings.usdRate ??= seed.settings.usdRate;
+  return db;
 }
 
 /** Lee, modifica y guarda de forma atómica (una escritura por vez). */
@@ -45,7 +52,7 @@ export async function getPublicData() {
   const db = await readDB();
   const products: PublicProduct[] = db.products
     .filter((p) => p.visible)
-    .map(({ cost: _cost, ...rest }) => rest);
+    .map(({ cost: _cost, supplier: _supplier, ...rest }) => rest);
   return { products, settings: db.settings };
 }
 

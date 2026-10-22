@@ -5,9 +5,9 @@ import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useRef } from "react";
 import { conditions } from "@/brand.config";
 import { pickDeal } from "@/lib/deal";
-import { money } from "@/lib/format";
 import { ProductVisual } from "./ProductVisual";
 import { Reveal } from "./Reveal";
+import { Price } from "./Price";
 import { useSite } from "./SiteContext";
 
 /** Gran banner del "producto estrella" (el primer destacado que no es la oferta). */
@@ -50,12 +50,7 @@ export function Spotlight() {
             )}
             <div className="mt-9 flex flex-wrap items-end gap-6">
               <div>
-                <p className="font-display text-3xl font-light tracking-tight">{money(star.price)}</p>
-                {star.installments && (
-                  <p className="text-sm text-muted">
-                    o {star.installments.count} cuotas de {money(star.installments.amount)}
-                  </p>
-                )}
+                <Price p={star} size="md" />
               </div>
               <button onClick={() => openProduct(star)} className="btn-solid">
                 Ver detalles <ArrowRight className="h-4 w-4" />

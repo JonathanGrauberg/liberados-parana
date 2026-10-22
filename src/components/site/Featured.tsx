@@ -3,9 +3,9 @@
 import { motion, useScroll, useSpring, useTransform } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { conditions } from "@/brand.config";
-import { money } from "@/lib/format";
 import type { PublicProduct } from "@/lib/types";
 import { ProductVisual, Tilt } from "./ProductVisual";
+import { Price } from "./Price";
 import { useSite } from "./SiteContext";
 
 /** Galería horizontal "fijada": scrolleás hacia abajo y los equipos pasan de costado. */
@@ -70,12 +70,7 @@ function FeaturedCard({ product, onOpen }: { product: PublicProduct; onOpen: () 
       </Tilt>
       <div className="relative z-10 flex items-end justify-between border-t border-line p-6">
         <div>
-          <p className="font-display text-xl font-light">{money(product.price)}</p>
-          {product.installments && (
-            <p className="text-xs text-muted">
-              {product.installments.count} cuotas de {money(product.installments.amount)}
-            </p>
-          )}
+          <Price p={product} />
         </div>
         <span className="font-display text-[11px] uppercase tracking-[0.2em] text-muted transition-colors group-hover:text-fg">Ver →</span>
       </div>
