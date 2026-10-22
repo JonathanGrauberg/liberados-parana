@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Liberados Paraná — web + panel del local
 
-## Getting Started
+Next.js 16 · React 19 · TypeScript · Tailwind 4 · Motion · Lenis · IA de recorte (@imgly/background-removal)
 
-First, run the development server:
+## Arrancar
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+cp .env.example .env.local   # cambiar la contraseña del panel
+npm run dev -- --port 3210
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Web: http://localhost:3210
+- Panel: http://localhost:3210/admin-lp (contraseña en `.env.local`). No está enlazado desde la web ni se indexa.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Qué hay
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**Web pública** (`src/components/site`)
+- Hero con los destacados turnándose sobre un pedestal y la foto del cartel con parallax de fondo.
+- Categorías, oferta de la semana con cuenta regresiva, catálogo con buscador y filtros; ficha con características y flechas (se cargan en el panel).
+- Producto estrella, destacados en galería horizontal, texto que se ilumina al scrollear.
+- Cotizador de Plan Canje (3 preguntas → valor estimado y diferencia a pagar → WhatsApp).
+- Cartel de bienvenida editable, horarios con "Abierto ahora" (hora de Argentina) y mapa 3D de Argentina que vuela hasta Paraná.
 
-## Learn More
+**Panel** (`src/app/admin-lp`) — pensado para usarlo desde el celular
+- Productos: fotos desde la cámara, **quitar fondo con IA en el propio navegador**, color de brillo automático, stock con +/−, visible/destacado.
+- Ventas y stock: registrar venta (descuenta stock, admite equipo en canje), ingresos de mercadería, totales por día/semana/mes, ganancia según costo, historial de movimientos.
+- Ofertas: cartel de bienvenida editable (claro/oscuro, textos con límite, se muestra una vez por visitante y otra vez cuando se cambia; `/?cartel=1` lo fuerza) y oferta de la semana.
+- Horarios, aviso especial, valores del plan canje y datos de contacto.
 
-To learn more about Next.js, take a look at the following resources:
+## Branding (cuando llegue el manual del diseñador)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- Colores: `src/app/globals.css` (bloque *TOKENS DE MARCA*) y `src/brand.config.ts`.
+- Tipografía: `src/app/fonts.ts` (Google Font o archivo propio con `next/font/local`).
+- Logo: `src/components/site/Logo.tsx` (hoy es una recreación en SVG del cartel).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Datos
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Se guardan en `data/db.json` y las fotos en `data/uploads/` (no se versionan; si se borra `db.json`, vuelve a los datos de ejemplo de `src/lib/seed.ts`).
+Sirve para un servidor propio/VPS. Para hosting serverless (Vercel) hay que pasar `src/lib/db.ts` y `/api/upload` a una base y almacenamiento externos (ej. Supabase); el resto del código no cambia.

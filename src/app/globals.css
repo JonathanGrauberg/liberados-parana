@@ -1,26 +1,209 @@
 @import "tailwindcss";
 
+/* ───────────── TOKENS DE MARCA ─────────────
+   Cambiar acá colores y radios; todo el sitio los hereda. */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --ink: #0b0b0e;          /* fondo oscuro principal */
+  --ink-2: #131317;        /* superficies / tarjetas */
+  --ink-3: #1a1a1f;        /* paneles de imagen */
+  --fg: #ecebf0;           /* texto principal */
+  --muted: #8b8a93;        /* texto secundario */
+  --line: rgba(255, 255, 255, 0.09);        /* líneas finas */
+  --line-strong: rgba(255, 255, 255, 0.22);
+  --accent: var(--cyan);   /* único acento: subrayados y estados activos */
+  --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
+  --indigo: #2b2a80;       /* azul del cartel */
+  --cyan: #3ee6e8;         /* inicio del degradé del logo */
+  --violet: #7b7fdc;
+  --pink: #f06bb5;         /* fin del degradé del logo */
+  --paper: #f5f5f7;        /* fondo claro estilo Apple */
+  --text-dark: #1d1d1f;
+  --text-mute: #6e6e73;
+  --brand-gradient: linear-gradient(120deg, var(--cyan) 0%, var(--violet) 50%, var(--pink) 100%);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-indigo: var(--indigo);
+  --color-cyan: var(--cyan);
+  --color-violet: var(--violet);
+  --color-pink: var(--pink);
+  --color-paper: var(--paper);
+  --color-text-dark: var(--text-dark);
+  --color-text-mute: var(--text-mute);
+  --font-sans: var(--font-text), system-ui, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  -webkit-text-size-adjust: 100%;
 }
-
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--ink);
+  color: var(--fg);
+  font-family: var(--font-text), system-ui, sans-serif;
+  font-size: 17px;
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.font-display {
+  font-family: var(--font-display), system-ui, sans-serif;
+}
+
+.text-gradient {
+  background: var(--brand-gradient);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-gradient-anim {
+  animation: sheen 6s ease-in-out infinite;
+}
+@keyframes sheen {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.bg-brand { background: var(--brand-gradient); }
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.glass {
+  background: rgba(10, 10, 32, 0.6);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+
+/* Borde con degradé de marca */
+.ring-brand { position: relative; }
+.ring-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: var(--brand-gradient);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Grano sutil para fondos oscuros */
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ───────────── PIEZAS DE ESTILO (sitio público) ───────────── */
+/* Etiqueta chica numerada: "01 — Catálogo" */
+.eyebrow {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.btn-solid,
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7em;
+  min-height: 48px;
+  padding: 0 22px;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  transition: background-color 0.4s, color 0.4s, border-color 0.4s, gap 0.5s var(--ease-lux);
+}
+.btn-solid { background: var(--fg); color: var(--ink); border: 1px solid var(--fg); }
+.btn-solid:hover { background: transparent; color: var(--fg); gap: 1.1em; }
+.btn-outline { border: 1px solid var(--line-strong); color: var(--fg); }
+.btn-outline:hover { background: var(--fg); color: var(--ink); border-color: var(--fg); }
+/* Enlace con subrayado de acento */
+.link-line {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6em;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--accent);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  transition: gap 0.5s var(--ease-lux);
+}
+.link-line:hover { gap: 1.1em; }
+/* Título liviano con remate en medium: <h2 class="title-lux">Una frase <b>que remata.</b></h2> */
+.title-lux {
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.title-lux b { font-weight: 500; }
+
+/* Pegado debajo del navbar; sube a 0 cuando el navbar se oculta */
+.sticky-under-nav {
+  position: sticky;
+  top: 64px;
+  transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (min-width: 768px) {
+  .sticky-under-nav { top: 72px; }
+}
+html[data-nav="hidden"] .sticky-under-nav { top: 0; }
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* Lenis (scroll suave) */
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+
+:focus-visible {
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+/* Fondo "ajedrez" para previsualizar PNG sin fondo en el panel */
+.checker {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #eee 25%, transparent 25%),
+    linear-gradient(-45deg, #eee 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eee 75%),
+    linear-gradient(-45deg, transparent 75%, #eee 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
 }
