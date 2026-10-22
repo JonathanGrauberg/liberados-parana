@@ -3,8 +3,10 @@
 import { Check, Plus, X } from "lucide-react";
 import { useState, useTransition } from "react";
 import { saveSettings } from "@/lib/actions";
+import { DEFAULT_BATTERY, DEFAULT_STATES, estimateTradeIn } from "@/lib/tradein";
 import type { Settings } from "@/lib/types";
-import { Button, Card, Field, Input } from "./ui";
+import { usd } from "@/lib/format";
+import { Button, Card, Field, Input, Select } from "./ui";
 
 export function SettingsEditor({ settings }: { settings: Settings }) {
   const [s, setS] = useState(settings);
@@ -41,6 +43,8 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
           <Input value={s.tradeIn.note} onChange={(e) => edit({ tradeIn: { ...s.tradeIn, note: e.target.value } })} />
         </Field>
       </Card>
+
+      <DiscountsCard tradeIn={s.tradeIn} onChange={(tradeIn) => edit({ tradeIn })} />
 
       <Card className="space-y-4">
         <h2 className="font-display text-xl font-bold">Contacto</h2>
@@ -94,5 +98,87 @@ function DollarCard({ initial, updatedAt }: { initial: number; updatedAt?: strin
         </Button>
       </div>
     </Card>
+  );
+}
+
+/** Cuánto se descuenta por estado y por batería, con un ejemplo que se recalcula en vivo. */
+function DiscountsCard({ tradeIn, onChange }: { tradeIn: Settings["tradeIn"]; onChange: (t: Settings["tradeIn"]) => void }) {
+  const states = tradeIn.states ?? DEFAULT_STATES;
+  const battery = tradeIn.battery ?? DEFAULT_BATTERY;
+  const pct = (v: string) => Math.min(100, Math.max(0, Number(v.replace(/\D/g, "")) || 0));
+  const priced = tradeIn.models.filter((m) => m.value > 0);
+  const [ex, setEx] = useState({ model: priced[0]?.id ?? "", state: states[1]?.id ?? states[0].id, battery: battery[1]?.id ?? battery[0].id });
+  const m = priced.find((x) => x.id === ex.model) ?? priced[0];
+  const st = states.find((x) => x.id === ex.state) ?? states[0];
+  const bt = battery.find((x) => x.id === ex.battery) ?? battery[0];
+
+  return (
+    <Card className="space-y-6">
+      <div>
+        <h2 className="font-display text-xl font-bold">Plan canje: cuánto se descuenta</h2>
+        <p className="text-sm text-text-mute">
+          La web calcula: <b>valor del modelo × % por estado × % por batería</b> (redondeado de a U$S 5). 100 % es el valor completo.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">Según el estado</h3>
+        <div className="overflow-hidden rounded-2xl border border-black/10">
+          <div className="hidden grid-cols-[1fr_1.6fr_110px] gap-2 bg-black/[.03] px-3 py-2 text-xs font-semibold text-text-mute sm:grid">
+            <span>Estado</span>
+            <span>Descripción para el cliente</span>
+            <span className="text-right">Toman</span>
+          </div>
+          {states.map((x, i) => (
+            <div key={x.id} className="grid grid-cols-[1fr_110px] gap-2 border-t border-black/5 p-2 first:border-t-0 sm:grid-cols-[1fr_1.6fr_110px]">
+              <Input value={x.label} maxLength={24} onChange={(e) => onChange({ ...tradeIn, states: states.map((y, j) => (j === i ? { ...y, label: e.target.value } : y)) })} />
+              <Input value={x.hint} maxLength={48} className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto" onChange={(e) => onChange({ ...tradeIn, states: states.map((y, j) => (j === i ? { ...y, hint: e.target.value } : y)) })} />
+              <PctInput value={x.pct} onChange={(v) => onChange({ ...tradeIn, states: states.map((y, j) => (j === i ? { ...y, pct: pct(v) } : y)) })} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <h3 className="mb-2 text-sm font-semibold">Según la salud de batería</h3>
+        <div className="overflow-hidden rounded-2xl border border-black/10">
+          {battery.map((x, i) => (
+            <div key={x.id} className="grid grid-cols-[1fr_110px] gap-2 border-t border-black/5 p-2 first:border-t-0">
+              <Input value={x.label} maxLength={20} onChange={(e) => onChange({ ...tradeIn, battery: battery.map((y, j) => (j === i ? { ...y, label: e.target.value } : y)) })} />
+              <PctInput value={x.pct} onChange={(v) => onChange({ ...tradeIn, battery: battery.map((y, j) => (j === i ? { ...y, pct: pct(v) } : y)) })} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {m && (
+        <div className="rounded-2xl bg-violet/[.07] p-4">
+          <p className="text-sm font-semibold">Probá un ejemplo</p>
+          <div className="mt-3 grid gap-2 sm:grid-cols-3">
+            <Select value={m.id} onChange={(e) => setEx({ ...ex, model: e.target.value })}>
+              {priced.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
+            </Select>
+            <Select value={st.id} onChange={(e) => setEx({ ...ex, state: e.target.value })}>
+              {states.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
+            </Select>
+            <Select value={bt.id} onChange={(e) => setEx({ ...ex, battery: e.target.value })}>
+              {battery.map((x) => <option key={x.id} value={x.id}>Batería {x.label}</option>)}
+            </Select>
+          </div>
+          <p className="mt-3 text-[15px]">
+            {usd(m.value)} × {st.pct} % × {bt.pct} % = <b className="font-display text-lg">{usd(estimateTradeIn(m.value, st.pct, bt.pct))}</b>
+          </p>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function PctInput({ value, onChange }: { value: number; onChange: (v: string) => void }) {
+  return (
+    <div className="relative">
+      <Input inputMode="numeric" value={String(value)} onChange={(e) => onChange(e.target.value)} className="pr-8 text-right font-semibold" aria-label="Porcentaje" />
+      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-mute">%</span>
+    </div>
   );
 }

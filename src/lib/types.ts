@@ -87,6 +87,8 @@ export type DayHours = { open: boolean; ranges: TimeRange[] };
 
 /** Valor máximo que se toma el equipo, en dólares */
 export type TradeInModel = { id: string; name: string; value: number };
+export type TradeInState = { id: string; label: string; hint: string; pct: number };
+export type TradeInBattery = { id: string; label: string; pct: number };
 
 export type Promo = { id: string; image: string; title: string; active: boolean };
 
@@ -105,7 +107,14 @@ export type Settings = {
   /** Cotización del dólar (pesos por dólar) que carga el local */
   usdRate: number;
   usdRateUpdatedAt?: string;
-  tradeIn: { models: TradeInModel[]; note: string };
+  tradeIn: {
+    models: TradeInModel[];
+    note: string;
+    /** % que se toma según el estado (100 = valor completo) */
+    states?: TradeInState[];
+    /** % que se toma según la salud de batería */
+    battery?: TradeInBattery[];
+  };
   promos: Promo[];
   /** Producto en "Oferta de la semana". Vacío = el de mayor descuento. */
   weeklyDeal?: { productId: string; endsOn?: string };

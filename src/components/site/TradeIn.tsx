@@ -4,26 +4,17 @@ import clsx from "clsx";
 import { animate, motion, useMotionValue, useTransform } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { inCurrency, money, toArs, usd, waLink } from "@/lib/format";
+import { DEFAULT_BATTERY, DEFAULT_STATES, estimateTradeIn } from "@/lib/tradein";
 import { priceText } from "./Price";
 import { WhatsAppIcon } from "./icons";
 import { Reveal } from "./Reveal";
 import { useSite } from "./SiteContext";
 
-const STATES = [
-  { id: "impecable", label: "Impecable", hint: "Como nuevo, sin marcas", factor: 1 },
-  { id: "muybueno", label: "Muy bueno", hint: "Marcas mínimas de uso", factor: 0.88 },
-  { id: "bueno", label: "Bueno", hint: "Rayones visibles", factor: 0.74 },
-  { id: "detalles", label: "Con detalles", hint: "Pantalla, cámara o botón a revisar", factor: 0.5 },
-];
-const BATTERY = [
-  { id: "alta", label: "85 % o más", factor: 1 },
-  { id: "media", label: "80 – 84 %", factor: 0.95 },
-  { id: "baja", label: "Menos de 80 %", factor: 0.88 },
-];
-
 export function TradeIn() {
   const { settings, products, tradeTarget } = useSite();
   const models = settings.tradeIn.models;
+  const STATES = settings.tradeIn.states ?? DEFAULT_STATES;
+  const BATTERY = settings.tradeIn.battery ?? DEFAULT_BATTERY;
   const phones = products.filter((p) => p.category === "celulares" && p.stock > 0 && !p.priceOnRequest);
   const rate = settings.usdRate;
 
@@ -41,7 +32,7 @@ export function TradeIn() {
   const b = BATTERY.find((x) => x.id === battery);
   const t = phones.find((x) => x.id === target);
   // valores de canje en dólares, redondeados de a 5
-  const estimate = useMemo(() => (m && s && b ? Math.round((m.value * s.factor * b.factor) / 5) * 5 : 0), [m, s, b]);
+  const estimate = useMemo(() => (m && s && b ? estimateTradeIn(m.value, s.pct, b.pct) : 0), [m, s, b]);
   const unknownModel = m && m.value === 0;
   const lead = t ? t.cashPrice || t.price : 0;
   const diff = !t ? 0 : t.currency === "USD" ? Math.max(0, lead - estimate) : Math.max(0, lead - toArs(estimate, "USD", rate));
