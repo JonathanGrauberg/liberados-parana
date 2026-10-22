@@ -39,5 +39,15 @@ npm run dev -- --port 3210
 
 ## Datos
 
-Se guardan en `data/db.json` y las fotos en `data/uploads/` (no se versionan; si se borra `db.json`, vuelve a los datos de ejemplo de `src/lib/seed.ts`).
-Sirve para un servidor propio/VPS. Para hosting serverless (Vercel) hay que pasar `src/lib/db.ts` y `/api/upload` a una base y almacenamiento externos (ej. Supabase); el resto del código no cambia.
+PostgreSQL en **Neon**, con **Prisma 7** (`prisma/schema.prisma`, cliente generado en `src/generated/prisma`).
+Productos, ventas, movimientos de stock, ajustes y **fotos** (tabla `Media`, servidas en `/media/[id]`) viven en la base, así que funciona igual en la compu y en Vercel.
+
+- La primera vez que arranca con la base vacía, carga sola los datos iniciales de `src/lib/seed.ts`.
+- Cambiar el esquema: editar `prisma/schema.prisma` y correr `npm run db:migrate`.
+- Ver/editar datos a mano: `npm run db:studio`.
+
+## Publicar en Vercel
+
+1. Importar el repo de GitHub en Vercel.
+2. En *Settings › Environment Variables* cargar `DATABASE_URL`, `ADMIN_PASSWORD` y `SESSION_SECRET` (ver `.env.example`). **Sin las dos últimas el panel no deja entrar.**
+3. Deploy. El build aplica las migraciones pendientes (`prisma migrate deploy`) y genera el cliente.

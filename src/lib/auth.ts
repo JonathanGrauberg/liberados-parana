@@ -10,14 +10,19 @@ import { redirect } from "next/navigation";
 const COOKIE = "lp_admin";
 const MAX_AGE = 60 * 60 * 24 * 14; // 14 días
 
-const password = () => process.env.ADMIN_PASSWORD || "liberados2026";
-const secret = () => (process.env.SESSION_SECRET || "dev-secret") + password();
+// En producción (Vercel) las dos variables son obligatorias: sin ellas el panel no deja entrar.
+// En la compu, si faltan, se usan valores de prueba.
+const isProd = process.env.NODE_ENV === "production";
+const password = () => process.env.ADMIN_PASSWORD || (isProd ? "" : "liberados2026");
+const secret = () => (process.env.SESSION_SECRET || (isProd ? "" : "dev-secret")) + password();
+const configured = () => !!password() && (!isProd || !!process.env.SESSION_SECRET);
 
 function sign(value: string) {
   return createHmac("sha256", secret()).update(value).digest("base64url");
 }
 
 export function checkPassword(input: string) {
+  if (!configured()) return false;
   const a = Buffer.from(input);
   const b = Buffer.from(password());
   return a.length === b.length && timingSafeEqual(a, b);
@@ -39,6 +44,7 @@ export async function destroySession() {
 }
 
 export async function isAdmin() {
+  if (!configured()) return false;
   const raw = (await cookies()).get(COOKIE)?.value;
   if (!raw) return false;
   const [exp, sig] = raw.split(".");

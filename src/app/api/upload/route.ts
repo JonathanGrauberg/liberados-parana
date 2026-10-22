@@ -1,7 +1,6 @@
-import { promises as fs } from "node:fs";
-import path from "node:path";
 import { isAdmin } from "@/lib/auth";
-import { UPLOAD_DIR, uid } from "@/lib/db";
+import { uid } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 const EXT: Record<string, string> = {
   "image/webp": ".webp",
@@ -10,7 +9,7 @@ const EXT: Record<string, string> = {
   "image/avif": ".avif",
 };
 
-/** Recibe una foto ya optimizada en el navegador y la guarda en data/uploads. */
+/** Recibe una foto ya optimizada en el navegador y la guarda en la base. */
 export async function POST(req: Request) {
   if (!(await isAdmin())) return Response.json({ error: "No autorizado" }, { status: 401 });
   const form = await req.formData();
@@ -18,9 +17,9 @@ export async function POST(req: Request) {
   if (!(file instanceof File)) return Response.json({ error: "Falta el archivo" }, { status: 400 });
   const ext = EXT[file.type];
   if (!ext) return Response.json({ error: "Formato no soportado" }, { status: 400 });
-  if (file.size > 10 * 1024 * 1024) return Response.json({ error: "La imagen supera 10 MB" }, { status: 400 });
-  const name = uid("img-") + ext;
-  await fs.mkdir(UPLOAD_DIR, { recursive: true });
-  await fs.writeFile(path.join(UPLOAD_DIR, name), Buffer.from(await file.arrayBuffer()));
-  return Response.json({ url: `/media/${name}` });
+  // Vercel acepta hasta ~4 MB por pedido; las fotos llegan ya achicadas a WebP (≈ 100–300 KB)
+  if (file.size > 4 * 1024 * 1024) return Response.json({ error: "La imagen supera 4 MB" }, { status: 400 });
+  const id = uid("img-") + ext;
+  await prisma.media.create({ data: { id, mime: file.type, size: file.size, data: new Uint8Array(await file.arrayBuffer()) } });
+  return Response.json({ url: `/media/${id}` });
 }

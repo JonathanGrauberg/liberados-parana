@@ -1,0 +1,95 @@
+// Base de datos de Liberados Paraná (PostgreSQL en Neon).
+// Después de cambiar este archivo: npm run db:migrate
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Product {
+  id             String   @id
+  slug           String   @unique
+  /// Orden en el catálogo (menor = primero)
+  position       Int      @default(0)
+  name           String
+  brand          String
+  category       String
+  condition      String
+  /// "USD" o "ARS"
+  currency       String   @default("ARS")
+  /// Precio de lista
+  price          Int
+  /// Precio contado efectivo
+  cashPrice      Int?
+  priceOnRequest Boolean  @default(false)
+  comparePrice   Int?
+  /// Privado: costo
+  cost           Int?
+  /// Privado: proveedor o "Canje"
+  supplier       String?
+  /// { count, amount } en pesos
+  installments   Json?
+  stock          Int      @default(0)
+  color          String
+  colorName      String?
+  storage        String?
+  battery        Int?
+  description    String   @default("")
+  /// [{ label, value }]
+  specs          Json     @default("[]")
+  images         String[]
+  featured       Boolean  @default(false)
+  visible        Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([position])
+}
+
+model Sale {
+  id      String   @id
+  date    DateTime @default(now())
+  /// [{ productId, name, qty, unitPrice, unitCost, currency }]
+  items   Json
+  /// { description, value } en pesos
+  tradeIn Json?
+  payment String
+  /// En pesos
+  total   Int
+  usdRate Int?
+  note    String?
+
+  @@index([date])
+}
+
+model StockMove {
+  id          String   @id
+  date        DateTime @default(now())
+  productId   String
+  productName String
+  delta       Int
+  reason      String
+  note        String?
+  saleId      String?
+
+  @@index([date])
+}
+
+/// Ajustes del sitio (contacto, horarios, canje, cartel, dólar…) en una sola fila "site".
+model Setting {
+  key   String @id
+  value Json
+}
+
+/// Fotos subidas desde el panel. Se sirven en /media/[id].
+model Media {
+  id        String   @id
+  mime      String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
+}

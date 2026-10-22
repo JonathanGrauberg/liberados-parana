@@ -46,3 +46,6 @@ next-env.d.ts
 !/data/uploads/.gitkeep
 .env.local
 !.env.example
+
+# cliente de Prisma generado
+/src/generated/
