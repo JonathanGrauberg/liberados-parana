@@ -1,12 +1,12 @@
 "use client";
 
-import { Check, ImagePlus, Loader2, Plus, RotateCcw, X } from "lucide-react";
+import { Check, ImagePlus, Loader2, Plus, RotateCcw, Star, X } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
 import { saveSettings } from "@/lib/actions";
-import type { Settings, TradeInPricing } from "@/lib/types";
+import type { ManualReview, Settings, TradeInPricing } from "@/lib/types";
 import { DEFAULT_PRICING, LOOKS, estimateTradeIn } from "@/lib/tradein";
 import { processImage, uploadBlob } from "@/lib/image-client";
-import { Button, Card, Field, Input } from "./ui";
+import { Button, Card, Field, Input, Textarea } from "./ui";
 
 export function SettingsEditor({ settings }: { settings: Settings }) {
   const [s, setS] = useState(settings);
@@ -51,6 +51,8 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
 
       <PricingCard pricing={s.tradeIn.pricing ?? DEFAULT_PRICING} example={s.tradeIn.models.find((m) => m.value > 0)} onChange={(pricing) => edit({ tradeIn: { ...s.tradeIn, pricing } })} />
 
+      <ReviewsCard reviews={s.reviews ?? []} onChange={(reviews) => edit({ reviews })} />
+
       <Card className="space-y-4">
         <h2 className="font-display text-xl font-bold">Contacto</h2>
         <div className="grid gap-4 sm:grid-cols-2">
@@ -64,7 +66,7 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
       </Card>
 
       <div className="sticky bottom-20 z-20 lg:bottom-6">
-        <Button variant="brand" className="h-14 w-full text-lg shadow-xl md:w-auto md:px-10" disabled={pending} onClick={() => start(async () => { await saveSettings({ contact: s.contact, tradeIn: s.tradeIn }); setSaved(true); })}>
+        <Button variant="brand" className="h-14 w-full text-lg shadow-xl md:w-auto md:px-10" disabled={pending} onClick={() => start(async () => { await saveSettings({ contact: s.contact, tradeIn: s.tradeIn, reviews: (s.reviews ?? []).filter((r) => r.author.trim() && r.text.trim()) }); setSaved(true); })}>
           {saved ? <><Check className="h-5 w-5" /> Guardado</> : pending ? "Guardando…" : "Guardar cambios"}
         </Button>
       </div>
@@ -216,6 +218,44 @@ function PricingCard({ pricing, example, onChange }: { pricing: TradeInPricing; 
           </Button>
         </div>
       </div>
+    </Card>
+  );
+}
+
+/** Reseñas que se muestran en el carrusel de la web. Copiarlas tal cual de Google (son reales: no inventar). */
+function ReviewsCard({ reviews, onChange }: { reviews: ManualReview[]; onChange: (r: ManualReview[]) => void }) {
+  const set = (i: number, patch: Partial<ManualReview>) => onChange(reviews.map((r, j) => (j === i ? { ...r, ...patch } : r)));
+  return (
+    <Card className="space-y-4">
+      <h2 className="font-display text-xl font-bold">Reseñas de Google</h2>
+      <p className="text-sm text-text-mute">
+        Copiá acá las mejores reseñas que les dejaron en Google (nombre, estrellas y texto, tal cual). Se muestran en un carrusel antes del footer, las de más estrellas primero.
+        Si más adelante se conecta la clave de Google, se cargan solas.
+      </p>
+      <div className="space-y-3">
+        {reviews.map((r, i) => (
+          <div key={r.id} className="space-y-2 rounded-2xl bg-black/[.03] p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="min-w-40 flex-1"><Input placeholder="Nombre" maxLength={40} value={r.author} onChange={(e) => set(i, { author: e.target.value })} /></div>
+              <div className="w-36"><Input placeholder="Hace 2 meses" maxLength={20} value={r.when ?? ""} onChange={(e) => set(i, { when: e.target.value })} /></div>
+              <span className="flex">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button key={n} type="button" aria-label={`${n} estrellas`} onClick={() => set(i, { rating: n })} className="p-1">
+                    <Star className={n <= r.rating ? "h-6 w-6 fill-[#fbbc04] text-[#fbbc04]" : "h-6 w-6 text-black/20"} />
+                  </button>
+                ))}
+              </span>
+              <button type="button" aria-label="Quitar reseña" onClick={() => onChange(reviews.filter((_, j) => j !== i))} className="grid h-12 w-12 place-items-center rounded-xl text-text-mute hover:bg-black/5">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <Textarea rows={3} maxLength={400} placeholder="Texto de la reseña" value={r.text} onChange={(e) => set(i, { text: e.target.value })} />
+          </div>
+        ))}
+      </div>
+      <Button type="button" variant="ghost" onClick={() => onChange([...reviews, { id: crypto.randomUUID(), author: "", rating: 5, text: "" }])}>
+        <Plus className="h-4 w-4" /> Agregar reseña
+      </Button>
     </Card>
   );
 }

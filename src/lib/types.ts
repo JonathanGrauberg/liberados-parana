@@ -100,6 +100,9 @@ export type TradeInPricing = {
   partsUnknown: number;
 };
 
+/** Reseña copiada de Google por el local (se usa si no hay clave de la API de Google). */
+export type ManualReview = { id: string; author: string; rating: number; text: string; when?: string };
+
 export type Promo = { id: string; image: string; title: string; active: boolean };
 
 export type Settings = {
@@ -125,6 +128,8 @@ export type Settings = {
     pricing?: TradeInPricing;
   };
   promos: Promo[];
+  /** Reseñas cargadas a mano desde el panel */
+  reviews?: ManualReview[];
   /** Producto en "Oferta de la semana". Vacío = el de mayor descuento. */
   weeklyDeal?: { productId: string; endsOn?: string };
   /** Cartel que aparece la primera vez que alguien entra a la web. */

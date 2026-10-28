@@ -2,7 +2,6 @@
 
 import clsx from "clsx";
 import { ExternalLink, Star } from "lucide-react";
-import { motion } from "motion/react";
 import type { GoogleReviews } from "@/lib/reviews";
 import { Reveal } from "./Reveal";
 import { useSite } from "./SiteContext";
@@ -28,9 +27,15 @@ function GoogleG({ className }: { className?: string }) {
   );
 }
 
-/** Reseñas reales de Google. Sin clave de la API, solo invita a verlas y dejarlas en Google. */
+/** Reseñas reales de Google en un carrusel. Vienen de la API de Google o de las que el local copia en Ajustes. */
 export function Reviews({ data }: { data: GoogleReviews | null }) {
   const { settings } = useSite();
+  // reseñas de Google (si hay clave) o las que copió el local en Ajustes; las mejores primero
+  const list = (data?.reviews.length ? data.reviews : (settings.reviews ?? []).map((r) => ({ ...r, photo: undefined as string | undefined })))
+    .filter((r) => r.rating >= 4 && r.text.trim())
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 12);
+  const loop = list.length >= 3; // carrusel infinito cuando hay varias
   const mapsUrl = data?.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.contact.mapsQuery)}`;
 
   return (
@@ -63,38 +68,29 @@ export function Reviews({ data }: { data: GoogleReviews | null }) {
           </a>
         </Reveal>
 
-        {data && data.reviews.length > 0 && (
-          <div className="no-scrollbar -mx-5 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-2 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0">
-            {data.reviews.slice(0, 6).map((r, i) => (
-              <motion.figure
-                key={r.author + i}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.06 }}
-                className="flex w-[82%] shrink-0 snap-start flex-col rounded-[24px] bg-ink-2 p-6 ring-1 ring-line md:w-auto"
-              >
-                <Stars value={r.rating} />
-                <blockquote className="mt-4 line-clamp-6 flex-1 text-[16px] leading-relaxed text-fg/90">“{r.text}”</blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  {r.photo ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={r.photo} alt="" referrerPolicy="no-referrer" className="h-10 w-10 rounded-full" />
-                  ) : (
-                    <span className="bg-brand grid h-10 w-10 place-items-center rounded-full font-bold text-[#07071a]">{r.author[0]}</span>
-                  )}
-                  <span className="min-w-0 flex-1">
-                    {r.authorUrl ? (
-                      <a href={r.authorUrl} target="_blank" rel="noopener" className="block truncate font-semibold hover:underline">{r.author}</a>
+        {list.length > 0 && (
+          <div className="group relative -mx-5 mt-10 overflow-hidden pl-5 md:-mx-8 md:pl-8 [mask-image:linear-gradient(90deg,transparent,#000_6%,#000_94%,transparent)]">
+            <div className={clsx("flex w-max py-2", loop && "marquee")} style={{ ["--dur" as string]: `${list.length * 7}s` }}>
+              {(loop ? [...list, ...list] : list).map((r, i) => (
+                <figure key={i} aria-hidden={i >= list.length || undefined} className="mr-4 flex w-[300px] shrink-0 flex-col rounded-[24px] bg-ink-2 p-6 ring-1 ring-line md:w-[360px]">
+                  <Stars value={r.rating} className="[&_svg]:h-5 [&_svg]:w-5" />
+                  <blockquote className="mt-4 line-clamp-6 flex-1 text-[16px] leading-relaxed text-fg/90">“{r.text}”</blockquote>
+                  <figcaption className="mt-5 flex items-center gap-3">
+                    {r.photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={r.photo} alt="" referrerPolicy="no-referrer" className="h-10 w-10 rounded-full" />
                     ) : (
-                      <span className="block truncate font-semibold">{r.author}</span>
+                      <span className="bg-brand grid h-10 w-10 place-items-center rounded-full font-bold text-[#07071a]">{r.author[0]?.toUpperCase()}</span>
                     )}
-                    <span className="block text-xs text-muted">{r.when}</span>
-                  </span>
-                  <GoogleG className="h-5 w-5 shrink-0" />
-                </figcaption>
-              </motion.figure>
-            ))}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate font-semibold">{r.author}</span>
+                      {r.when && <span className="block text-xs text-muted">{r.when}</span>}
+                    </span>
+                    <GoogleG className="h-5 w-5 shrink-0" />
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         )}
 

@@ -232,3 +232,11 @@ html.lenis, html.lenis body { height: auto; }
     radial-gradient(50% 40% at 20% 75%, rgba(110, 100, 230, 0.25), transparent 70%),
     var(--page-gradient);
 }
+
+/* Carrusel infinito (reseñas): se frena al pasar el mouse */
+@keyframes marquee { to { transform: translateX(-50%); } }
+.marquee { animation: marquee var(--dur, 40s) linear infinite; }
+.group:hover .marquee { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee { animation: none; }
+}
