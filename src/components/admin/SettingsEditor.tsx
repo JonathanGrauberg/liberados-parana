@@ -1,12 +1,11 @@
 "use client";
 
-import { Check, Plus, X } from "lucide-react";
-import { useState, useTransition } from "react";
+import { Check, ImagePlus, Loader2, Plus, RotateCcw, X } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
 import { saveSettings } from "@/lib/actions";
-import { DEFAULT_BATTERY, DEFAULT_STATES, estimateTradeIn } from "@/lib/tradein";
 import type { Settings } from "@/lib/types";
-import { usd } from "@/lib/format";
-import { Button, Card, Field, Input, Select } from "./ui";
+import { processImage, uploadBlob } from "@/lib/image-client";
+import { Button, Card, Field, Input } from "./ui";
 
 export function SettingsEditor({ settings }: { settings: Settings }) {
   const [s, setS] = useState(settings);
@@ -22,14 +21,15 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
   return (
     <div className="space-y-6">
       <DollarCard initial={settings.usdRate} updatedAt={settings.usdRateUpdatedAt} />
+      <HeroPhotoCard initial={settings.heroImage} />
+
       <Card className="space-y-4">
-        <h2 className="font-display text-xl font-bold">Plan canje: cuánto tomamos cada equipo (U$S)</h2>
-        <p className="text-sm text-text-mute">Es el valor máximo en dólares (equipo impecable, batería 85 % o más). La web descuenta según el estado que elige el cliente. Si ponés 0, se cotiza por WhatsApp.</p>
-        <div className="space-y-2">
+        <h2 className="font-display text-xl font-bold">Plan canje: modelos del formulario</h2>
+        <p className="text-sm text-text-mute">Son los modelos que el cliente puede elegir como “su iPhone”. La web no muestra valores: la cotización se la pasan ustedes por WhatsApp.</p>
+        <div className="grid gap-2 sm:grid-cols-2">
           {s.tradeIn.models.map((m, i) => (
             <div key={m.id} className="flex gap-2">
-              <Input value={m.name} onChange={(e) => edit({ tradeIn: { ...s.tradeIn, models: s.tradeIn.models.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } })} />
-              <Input inputMode="numeric" className="max-w-40" value={m.value ? m.value.toLocaleString("es-AR") : "0"} onChange={(e) => edit({ tradeIn: { ...s.tradeIn, models: s.tradeIn.models.map((x, j) => (j === i ? { ...x, value: num(e.target.value) } : x)) } })} />
+              <Input value={m.name} maxLength={28} onChange={(e) => edit({ tradeIn: { ...s.tradeIn, models: s.tradeIn.models.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)) } })} />
               <button type="button" aria-label="Quitar modelo" onClick={() => edit({ tradeIn: { ...s.tradeIn, models: s.tradeIn.models.filter((_, j) => j !== i) } })} className="grid h-12 w-12 shrink-0 place-items-center rounded-xl text-text-mute hover:bg-black/5">
                 <X className="h-5 w-5" />
               </button>
@@ -39,12 +39,10 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
         <Button type="button" variant="ghost" onClick={() => edit({ tradeIn: { ...s.tradeIn, models: [...s.tradeIn.models, { id: crypto.randomUUID(), name: "", value: 0 }] } })}>
           <Plus className="h-4 w-4" /> Agregar modelo
         </Button>
-        <Field label="Aclaración que se muestra al cliente">
-          <Input value={s.tradeIn.note} onChange={(e) => edit({ tradeIn: { ...s.tradeIn, note: e.target.value } })} />
+        <Field label="Aclaración que se muestra al cliente (al final del formulario)">
+          <Input value={s.tradeIn.note} maxLength={120} onChange={(e) => edit({ tradeIn: { ...s.tradeIn, note: e.target.value } })} />
         </Field>
       </Card>
-
-      <DiscountsCard tradeIn={s.tradeIn} onChange={(tradeIn) => edit({ tradeIn })} />
 
       <Card className="space-y-4">
         <h2 className="font-display text-xl font-bold">Contacto</h2>
@@ -101,84 +99,69 @@ function DollarCard({ initial, updatedAt }: { initial: number; updatedAt?: strin
   );
 }
 
-/** Cuánto se descuenta por estado y por batería, con un ejemplo que se recalcula en vivo. */
-function DiscountsCard({ tradeIn, onChange }: { tradeIn: Settings["tradeIn"]; onChange: (t: Settings["tradeIn"]) => void }) {
-  const states = tradeIn.states ?? DEFAULT_STATES;
-  const battery = tradeIn.battery ?? DEFAULT_BATTERY;
-  const pct = (v: string) => Math.min(100, Math.max(0, Number(v.replace(/\D/g, "")) || 0));
-  const priced = tradeIn.models.filter((m) => m.value > 0);
-  const [ex, setEx] = useState({ model: priced[0]?.id ?? "", state: states[1]?.id ?? states[0].id, battery: battery[1]?.id ?? battery[0].id });
-  const m = priced.find((x) => x.id === ex.model) ?? priced[0];
-  const st = states.find((x) => x.id === ex.state) ?? states[0];
-  const bt = battery.find((x) => x.id === ex.battery) ?? battery[0];
+/** Foto de portada: la que encabeza la web. */
+function HeroPhotoCard({ initial }: { initial?: string }) {
+  const [img, setImg] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const [pending, start] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const file = useRef<HTMLInputElement>(null);
+
+  async function upload(f?: File) {
+    if (!f) return;
+    setBusy(true);
+    try {
+      const { blob } = await processImage(f, { trim: false });
+      const url = await uploadBlob(blob);
+      setImg(url);
+      start(async () => {
+        await saveSettings({ heroImage: url });
+        setSaved(true);
+      });
+    } finally {
+      setBusy(false);
+      if (file.current) file.current.value = "";
+    }
+  }
 
   return (
-    <Card className="space-y-6">
+    <Card className="space-y-4">
       <div>
-        <h2 className="font-display text-xl font-bold">Plan canje: cuánto se descuenta</h2>
-        <p className="text-sm text-text-mute">
-          La web calcula: <b>valor del modelo × % por estado × % por batería</b> (redondeado de a U$S 5). 100 % es el valor completo.
-        </p>
+        <h2 className="font-display text-xl font-bold">Foto de portada</h2>
+        <p className="text-sm text-text-mute">La foto grande que encabeza la web. Ideal: el frente del local o el mostrador, horizontal y bien iluminada.</p>
       </div>
-
-      <div>
-        <h3 className="mb-2 text-sm font-semibold">Según el estado</h3>
-        <div className="overflow-hidden rounded-2xl border border-black/10">
-          <div className="hidden grid-cols-[1fr_1.6fr_110px] gap-2 bg-black/[.03] px-3 py-2 text-xs font-semibold text-text-mute sm:grid">
-            <span>Estado</span>
-            <span>Descripción para el cliente</span>
-            <span className="text-right">Toman</span>
+      <div className="relative aspect-[21/9] overflow-hidden rounded-2xl bg-black">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={img || "/local-cartel.jpg"} alt="Portada actual" className="h-full w-full object-cover opacity-90" />
+        {(busy || pending) && (
+          <div className="absolute inset-0 grid place-items-center bg-black/50 text-white">
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
-          {states.map((x, i) => (
-            <div key={x.id} className="grid grid-cols-[1fr_110px] gap-2 border-t border-black/5 p-2 first:border-t-0 sm:grid-cols-[1fr_1.6fr_110px]">
-              <Input value={x.label} maxLength={24} onChange={(e) => onChange({ ...tradeIn, states: states.map((y, j) => (j === i ? { ...y, label: e.target.value } : y)) })} />
-              <Input value={x.hint} maxLength={48} className="col-span-2 row-start-2 sm:col-span-1 sm:row-start-auto" onChange={(e) => onChange({ ...tradeIn, states: states.map((y, j) => (j === i ? { ...y, hint: e.target.value } : y)) })} />
-              <PctInput value={x.pct} onChange={(v) => onChange({ ...tradeIn, states: states.map((y, j) => (j === i ? { ...y, pct: pct(v) } : y)) })} />
-            </div>
-          ))}
-        </div>
+        )}
       </div>
-
-      <div>
-        <h3 className="mb-2 text-sm font-semibold">Según la salud de batería</h3>
-        <div className="overflow-hidden rounded-2xl border border-black/10">
-          {battery.map((x, i) => (
-            <div key={x.id} className="grid grid-cols-[1fr_110px] gap-2 border-t border-black/5 p-2 first:border-t-0">
-              <Input value={x.label} maxLength={20} onChange={(e) => onChange({ ...tradeIn, battery: battery.map((y, j) => (j === i ? { ...y, label: e.target.value } : y)) })} />
-              <PctInput value={x.pct} onChange={(v) => onChange({ ...tradeIn, battery: battery.map((y, j) => (j === i ? { ...y, pct: pct(v) } : y)) })} />
-            </div>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" variant="primary" disabled={busy || pending} onClick={() => file.current?.click()}>
+          <ImagePlus className="h-4 w-4" /> Cambiar foto
+        </Button>
+        {img && (
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={busy || pending}
+            onClick={() =>
+              start(async () => {
+                await saveSettings({ heroImage: "" });
+                setImg(undefined);
+                setSaved(true);
+              })
+            }
+          >
+            <RotateCcw className="h-4 w-4" /> Volver a la del cartel
+          </Button>
+        )}
+        {saved && !pending && <span className="flex items-center gap-1 text-sm font-semibold text-emerald-700"><Check className="h-4 w-4" /> Guardado</span>}
       </div>
-
-      {m && (
-        <div className="rounded-2xl bg-violet/[.07] p-4">
-          <p className="text-sm font-semibold">Probá un ejemplo</p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-3">
-            <Select value={m.id} onChange={(e) => setEx({ ...ex, model: e.target.value })}>
-              {priced.map((x) => <option key={x.id} value={x.id}>{x.name}</option>)}
-            </Select>
-            <Select value={st.id} onChange={(e) => setEx({ ...ex, state: e.target.value })}>
-              {states.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
-            </Select>
-            <Select value={bt.id} onChange={(e) => setEx({ ...ex, battery: e.target.value })}>
-              {battery.map((x) => <option key={x.id} value={x.id}>Batería {x.label}</option>)}
-            </Select>
-          </div>
-          <p className="mt-3 text-[15px]">
-            {usd(m.value)} × {st.pct} % × {bt.pct} % = <b className="font-display text-lg">{usd(estimateTradeIn(m.value, st.pct, bt.pct))}</b>
-          </p>
-        </div>
-      )}
+      <input ref={file} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0])} />
     </Card>
-  );
-}
-
-function PctInput({ value, onChange }: { value: number; onChange: (v: string) => void }) {
-  return (
-    <div className="relative">
-      <Input inputMode="numeric" value={String(value)} onChange={(e) => onChange(e.target.value)} className="pr-8 text-right font-semibold" aria-label="Porcentaje" />
-      <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-text-mute">%</span>
-    </div>
   );
 }

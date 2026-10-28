@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import { Check, ExternalLink, ImagePlus, Loader2, Moon, Sun, Trash2 } from "lucide-react";
 import { useRef, useState, useTransition } from "react";
-import { saveSettings, saveWelcome } from "@/lib/actions";
+import { saveWelcome } from "@/lib/actions";
 import { processImage, uploadBlob } from "@/lib/image-client";
 import type { Product, Settings, WelcomeAction, WelcomePopup } from "@/lib/types";
 import { WELCOME_ACTIONS, WELCOME_LIMITS, defaultWelcome } from "@/lib/welcome";
@@ -14,7 +14,6 @@ export function OffersEditor({ settings, products }: { settings: Settings; produ
   return (
     <div className="space-y-6">
       <WelcomeEditor initial={settings.welcome ?? defaultWelcome} products={products} />
-      <DealEditor initial={settings.weeklyDeal} products={products} />
     </div>
   );
 }
@@ -150,47 +149,5 @@ function Limited({ label, value, max, onChange, placeholder, area }: { label: st
         </span>
       </div>
     </Field>
-  );
-}
-
-/* ───────────── Oferta de la semana ───────────── */
-
-function DealEditor({ initial, products }: { initial?: Settings["weeklyDeal"]; products: Product[] }) {
-  const [deal, setDeal] = useState(initial ?? { productId: "" });
-  const [pending, start] = useTransition();
-  const [saved, setSaved] = useState(false);
-  const edit = (d: typeof deal) => {
-    setSaved(false);
-    setDeal(d);
-  };
-  return (
-    <Card className="space-y-4">
-      <div>
-        <h2 className="font-display text-xl font-bold">Oferta de la semana</h2>
-        <p className="text-sm text-text-mute">El recuadro grande con cuenta regresiva. Para que muestre el % de descuento, cargale al producto un “Precio anterior”.</p>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-[2fr_1fr]">
-        <Field label="Producto">
-          <Select value={deal.productId} onChange={(e) => edit({ ...deal, productId: e.target.value })}>
-            <option value="">Automático: el de mayor descuento</option>
-            {products
-              .filter((p) => p.visible)
-              .map((p) => (
-                <option key={p.id} value={p.id} disabled={p.stock === 0}>
-                  {p.name} {p.storage ?? ""}
-                  {p.comparePrice && p.comparePrice > p.price ? " · con descuento" : ""}
-                  {p.stock === 0 ? " (sin stock)" : ""}
-                </option>
-              ))}
-          </Select>
-        </Field>
-        <Field label="Termina el" hint="Vacío = este domingo a la noche">
-          <Input type="date" value={deal.endsOn ?? ""} onChange={(e) => edit({ ...deal, endsOn: e.target.value || undefined })} />
-        </Field>
-      </div>
-      <Button variant="brand" className="h-12" disabled={pending} onClick={() => start(async () => { await saveSettings({ weeklyDeal: deal }); setSaved(true); })}>
-        {saved ? <><Check className="h-5 w-5" /> Guardado</> : pending ? "Guardando…" : "Guardar oferta"}
-      </Button>
-    </Card>
   );
 }

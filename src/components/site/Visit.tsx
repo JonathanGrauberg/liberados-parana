@@ -64,15 +64,15 @@ export function Visit() {
               {order.map((d) => (
                 <li key={d} className={clsx("flex items-center justify-between border-b border-line py-3 text-[16px]", d === today ? "font-normal text-fg" : "text-muted")}>
                   <span className="flex items-center gap-2">
-                    {d === today && <span className="h-px w-4 bg-accent" />}
+                    {d === today && <span className="h-[2px] w-4 bg-brand" />}
                     {DAY_NAMES[d]}
-                    {d === today && <span className="eyebrow !text-[10px] !text-accent">hoy</span>}
+                    {d === today && <span className="text-gradient font-display text-[10px] font-medium uppercase tracking-[0.3em]">hoy</span>}
                   </span>
                   <span className="text-right tabular-nums">{rangesText(hours[d])}</span>
                 </li>
               ))}
             </ul>
-            {hoursNote && <p className="mt-4 border-l border-accent pl-4 text-fg/80">{hoursNote}</p>}
+            {hoursNote && <p className="border-brand mt-4 border-l pl-4 text-fg/80">{hoursNote}</p>}
 
             <div className="mt-auto flex flex-wrap items-center gap-3 pt-7">
               <a href={mapsUrl} target="_blank" rel="noopener" className="btn-solid">

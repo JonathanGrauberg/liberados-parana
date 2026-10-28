@@ -2,7 +2,7 @@
 
 import { BellRing, MapPin, Phone } from "lucide-react";
 import { motion, useScroll, useTransform } from "motion/react";
-import { brand, categories } from "@/brand.config";
+import { brand } from "@/brand.config";
 import { waLink } from "@/lib/format";
 import { WhatsAppIcon } from "./icons";
 import { Logo } from "./Logo";
@@ -10,16 +10,15 @@ import { useSite } from "./SiteContext";
 import { SocialButtons } from "./SocialButtons";
 
 export function Footer() {
-  const { settings, products, showCategory } = useSite();
+  const { settings, startTradeIn } = useSite();
   const { contact } = settings;
-  const usedCats = categories.filter((c) => products.some((p) => p.category === c.id));
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.mapsQuery)}`;
 
   return (
     <footer className="relative overflow-hidden border-t border-line bg-ink px-5 pb-10 pt-16 md:px-8 md:pt-20">
       <div className="mx-auto max-w-7xl">
         {/* Lista de ofertas por WhatsApp */}
-        <div className="relative border border-line p-7 md:p-10">
+        <div className="ring-brand relative p-7 md:p-10">
           <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <p className="eyebrow flex items-center gap-2">
@@ -46,15 +45,12 @@ export function Footer() {
             <Logo />
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-muted">{brand.description}</p>
           </div>
-          <FooterCol title="Catálogo">
-            {usedCats.map((c) => (
-              <li key={c.id}>
-                <button onClick={() => showCategory(c.id)} className="transition-colors hover:text-fg">{c.label}</button>
-              </li>
-            ))}
+          <FooterCol title="Equipos">
+            <li><a href="#catalogo" className="transition-colors hover:text-fg">Usados seleccionados</a></li>
+            <li><a href="#catalogo" className="transition-colors hover:text-fg">Nuevos en caja</a></li>
+            <li><button type="button" onClick={() => startTradeIn()} className="transition-colors hover:text-fg">Plan Canje</button></li>
           </FooterCol>
           <FooterCol title="Ayuda">
-            <li><a href="#canje" className="transition-colors hover:text-fg">Plan Canje</a></li>
             <li><a href="#local" className="transition-colors hover:text-fg">Horarios</a></li>
             <li><a href={mapsUrl} target="_blank" rel="noopener" className="transition-colors hover:text-fg">Cómo llegar</a></li>
           </FooterCol>

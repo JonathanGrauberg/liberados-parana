@@ -10,13 +10,19 @@ import { SocialButtons } from "./SocialButtons";
 import { ThemeToggle } from "./ThemeToggle";
 
 const links = [
-  { href: "#catalogo", label: "Catálogo" },
+  { href: "#catalogo", label: "Equipos" },
   { href: "#canje", label: "Plan Canje" },
   { href: "#local", label: "El local" },
 ];
 
 export function Nav() {
-  const { search } = useSite();
+  const { search, startTradeIn } = useSite();
+  // "Plan Canje" abre el panel en vez de navegar
+  const onLink = (e: React.MouseEvent, href: string) => {
+    if (href !== "#canje") return;
+    e.preventDefault();
+    startTradeIn();
+  };
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -51,9 +57,10 @@ export function Nav() {
           <ul className="hidden items-center gap-9 md:flex">
             {links.map((l) => (
               <li key={l.href}>
-                <a href={l.href} className="group font-display relative text-[11px] uppercase tracking-[0.22em] text-fg/70 transition-colors hover:text-fg">
+                <a href={l.href}
+                onClick={(e) => onLink(e, l.href)} className="group font-display relative text-[11px] uppercase tracking-[0.22em] text-fg/70 transition-colors hover:text-fg">
                   {l.label}
-                  <span className="absolute -bottom-2 left-0 h-px w-0 bg-accent transition-all duration-500 group-hover:w-full" />
+                  <span className="absolute -bottom-2 left-0 h-px w-0 bg-brand transition-all duration-500 group-hover:w-full" />
                 </a>
               </li>
             ))}
@@ -106,6 +113,7 @@ export function Nav() {
               <motion.a
                 key={l.href}
                 href={l.href}
+                onClick={(e) => onLink(e, l.href)}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.05 * i, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}

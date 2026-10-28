@@ -20,6 +20,8 @@
   --text-dark: #1d1d1f;
   --text-mute: #6e6e73;
   --brand-gradient: linear-gradient(120deg, var(--cyan) 0%, var(--violet) 50%, var(--pink) 100%);
+  /* el mismo degradé para textos (en modo claro se oscurece para que se lea) */
+  --brand-text: var(--brand-gradient);
 }
 
 /* ───────────── MODO CLARO (lo elige el visitante con el botón del navbar) ───────────── */
@@ -43,6 +45,7 @@ html[data-theme="light"] {
   --line: rgba(0, 0, 0, 0.1);
   --line-strong: rgba(0, 0, 0, 0.26);
   --accent: #0b8a8d;
+  --brand-text: linear-gradient(120deg, #0a9a9d 0%, #5a5fd0 50%, #d4448f 100%);
   --ped-edge: #cfccc5;
   --ped-mid: #f3f2ee;
   --ped-top-1: #ffffff;
@@ -94,14 +97,15 @@ body {
   font-family: var(--font-display), system-ui, sans-serif;
 }
 
-.text-gradient {
-  background: var(--brand-gradient);
-  background-size: 200% 100%;
+.text-gradient,
+.title-lux b {
+  background: var(--brand-text);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
 }
 .text-gradient-anim {
+  background-size: 200% 100%;
   animation: sheen 6s ease-in-out infinite;
 }
 @keyframes sheen {
@@ -110,6 +114,8 @@ body {
 }
 
 .bg-brand { background: var(--brand-gradient); }
+/* borde fino con el degradé de marca (en el lado que tenga ancho) */
+.border-brand { border-image: var(--brand-gradient) 1; }
 
 @keyframes marquee {
   from { transform: translateX(0); }
@@ -182,7 +188,8 @@ body {
   align-items: center;
   gap: 0.6em;
   padding-bottom: 4px;
-  border-bottom: 1px solid var(--accent);
+  border-bottom: 1px solid transparent;
+  border-image: var(--brand-gradient) 1;
   font-family: var(--font-display), system-ui, sans-serif;
   font-size: 11px;
   letter-spacing: 0.24em;

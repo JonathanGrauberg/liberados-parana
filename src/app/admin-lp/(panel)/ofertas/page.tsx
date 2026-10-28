@@ -6,7 +6,7 @@ export default async function Offers() {
   const { settings, products } = await readDB();
   return (
     <>
-      <PageTitle title="Ofertas" subtitle="El cartel que aparece al entrar y la oferta de la semana." />
+      <PageTitle title="Ofertas" subtitle="El cartel con ofertas que aparece cuando alguien entra a la web." />
       <OffersEditor settings={settings} products={products} />
     </>
   );

@@ -104,6 +104,8 @@ export type Settings = {
   /** 0 = domingo … 6 = sábado */
   hours: DayHours[];
   hoursNote: string;
+  /** Foto de portada (encabezado de la web). Vacío = la foto del cartel. */
+  heroImage?: string;
   /** Cotización del dólar (pesos por dólar) que carga el local */
   usdRate: number;
   usdRateUpdatedAt?: string;

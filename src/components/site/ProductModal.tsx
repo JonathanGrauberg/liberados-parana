@@ -164,7 +164,7 @@ export function ProductModal() {
               </div>
 
               <div className="border border-line p-6">
-                {off > 0 && <p className="font-display mb-1 text-xs tracking-[0.1em] text-accent">−{off}%</p>}
+                {off > 0 && <p className="text-gradient font-display mb-1 w-fit text-xs font-medium tracking-[0.1em]">−{off}%</p>}
                 <Price p={p} size="lg" />
                 <div className="mt-6 grid gap-3">
                   <a
@@ -173,14 +173,14 @@ export function ProductModal() {
                     rel="noopener"
                     className="btn-solid w-full !min-h-[54px]"
                   >
-                    <WhatsAppIcon className="h-4 w-4" /> Lo quiero
+                    <WhatsAppIcon className="h-4 w-4" /> Consultar por WhatsApp
                   </a>
                   {p.category === "celulares" && (
                     <button
                       onClick={() => startTradeIn(p.id)}
                       className="btn-outline w-full !min-h-[54px]"
                     >
-                      <ArrowLeftRight className="h-4 w-4" /> Entregar mi usado
+                      <ArrowLeftRight className="h-4 w-4" /> Entregar mi iPhone
                     </button>
                   )}
                 </div>
@@ -217,7 +217,7 @@ function Callout({ spec, side, top, delay }: { spec: Spec; side: "left" | "right
         transition={{ delay: delay + 0.25, duration: 0.7, ease }}
         className={clsx("relative h-px flex-1", left ? "origin-left bg-gradient-to-r" : "origin-right bg-gradient-to-l", "from-fg/5 to-fg/50")}
       >
-        <span className={clsx("absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-accent", left ? "-right-0.5" : "-left-0.5")} />
+        <span className={clsx("absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-brand", left ? "-right-0.5" : "-left-0.5")} />
         <span className={clsx("absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-accent/50", left ? "-right-2" : "-left-2")} />
       </motion.div>
     </div>
