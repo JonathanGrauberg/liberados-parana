@@ -85,10 +85,20 @@ export type StockMove = {
 export type TimeRange = { from: string; to: string };
 export type DayHours = { open: boolean; ranges: TimeRange[] };
 
-/** Valor máximo que se toma el equipo, en dólares */
+/** Valor máximo que se toma el equipo (impecable, buena batería), en dólares. Uso interno: no se muestra. */
 export type TradeInModel = { id: string; name: string; value: number };
-export type TradeInState = { id: string; label: string; hint: string; pct: number };
-export type TradeInBattery = { id: string; label: string; pct: number };
+
+/** Porcentajes del valor máximo que se toman según las respuestas del formulario (100 = valor completo). */
+export type TradeInPricing = {
+  /** Por estado: Impecable / Bueno, marcas leves / Marcas visibles / Dañado o roto */
+  looks: Record<string, number>;
+  battery: { high: number; mid: number; low: number; unknown: number };
+  /** Si tiene alguna falla */
+  fault: number;
+  /** Si tiene piezas cambiadas / si no sabe */
+  partsYes: number;
+  partsUnknown: number;
+};
 
 export type Promo = { id: string; image: string; title: string; active: boolean };
 
@@ -112,10 +122,7 @@ export type Settings = {
   tradeIn: {
     models: TradeInModel[];
     note: string;
-    /** % que se toma según el estado (100 = valor completo) */
-    states?: TradeInState[];
-    /** % que se toma según la salud de batería */
-    battery?: TradeInBattery[];
+    pricing?: TradeInPricing;
   };
   promos: Promo[];
   /** Producto en "Oferta de la semana". Vacío = el de mayor descuento. */

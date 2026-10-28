@@ -26,7 +26,7 @@ export function TextReveal({ text, highlight = [] }: { text: string; highlight?:
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 0.85", "end 0.45"] });
   const words = text.split(" ");
   return (
-    <section className="relative border-t border-line bg-ink px-5 py-[20vh] md:px-8">
+    <section className="relative border-t border-line px-5 py-[20vh] md:px-8">
       <p
         ref={ref}
         className="title-lux mx-auto max-w-5xl text-[clamp(30px,4.6vw,60px)] !leading-[1.15]"

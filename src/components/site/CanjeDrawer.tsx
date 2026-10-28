@@ -1,23 +1,15 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowLeft, ArrowLeftRight, ArrowRight, Check, X } from "lucide-react";
+import { ArrowLeft, ArrowLeftRight, ArrowRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { waLink } from "@/lib/format";
+import { useEffect, useState } from "react";
 import { WhatsAppIcon } from "./icons";
-import { ProductVisual } from "./ProductVisual";
 import { useSite } from "./SiteContext";
+import { DeviceQuestions, LiveResult, NameField, PhonePicker, Q, StateQuestions, useTradeInForm } from "./tradein-form";
 
 const ease = [0.16, 1, 0.3, 1] as const;
-const CAPACITIES = ["64 GB", "128 GB", "256 GB", "512 GB", "1 TB"];
-const LOOKS = [
-  { id: "Impecable", hint: "Como nuevo, sin marcas" },
-  { id: "Bueno, marcas leves", hint: "Detalles mínimos de uso" },
-  { id: "Marcas visibles", hint: "Rayones o golpes a la vista" },
-  { id: "Dañado o roto", hint: "Pantalla, tapa o cámara rota" },
-];
-const STEPS = ["Tu iPhone", "Estado", "Tu próximo iPhone"];
+const STEPS = ["Tu próximo iPhone", "Tu iPhone", "Estado"];
 
 /** Botón flotante del Plan Canje: pestaña a la derecha en PC, botón abajo en celular. */
 export function CanjeTrigger() {
@@ -28,19 +20,17 @@ export function CanjeTrigger() {
       <button
         type="button"
         onClick={() => startTradeIn()}
-        className="group fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-3 border border-r-0 border-line-strong bg-ink/90 px-3 py-5 text-fg backdrop-blur transition-colors hover:bg-fg hover:text-ink md:flex"
+        className="group fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-3 rounded-l-2xl bg-brand px-3 py-5 font-bold text-[#07071a] shadow-[0_12px_40px_-10px_rgba(123,127,220,.8)] transition hover:pr-4 md:flex"
         aria-label="Abrir Plan Canje"
       >
-        <span aria-hidden className="absolute inset-y-0 left-0 w-[2px] bg-brand" />
         <ArrowLeftRight className="h-4 w-4" />
-        <span className="font-display text-[11px] uppercase tracking-[0.24em] [writing-mode:vertical-rl] rotate-180">Plan canje · Cotizá tu usado</span>
+        <span className="rotate-180 text-[13px] font-bold [writing-mode:vertical-rl]">Plan canje · Cotizá tu usado</span>
       </button>
       <button
         type="button"
         onClick={() => startTradeIn()}
-        className="font-display fixed bottom-5 left-5 z-40 flex h-14 items-center gap-2.5 border border-line-strong bg-ink/90 px-5 text-[11px] uppercase tracking-[0.18em] text-fg shadow-[0_12px_30px_rgba(0,0,0,.35)] backdrop-blur md:hidden"
+        className="fixed bottom-5 left-5 z-40 flex h-14 items-center gap-2 rounded-full bg-brand px-5 text-[15px] font-bold text-[#07071a] shadow-[0_12px_40px_-8px_rgba(123,127,220,.8)] md:hidden"
       >
-        <span aria-hidden className="absolute inset-x-0 bottom-0 h-[2px] bg-brand" />
         <ArrowLeftRight className="h-4 w-4" /> Entregar mi iPhone
       </button>
     </>
@@ -59,29 +49,12 @@ function useIsDesktop() {
   return d;
 }
 
-/** Formulario del Plan Canje. No muestra valores: arma el mensaje y lo manda por WhatsApp. */
+/** Panel flotante del Plan Canje (derecha en PC, abajo en celular). */
 export function CanjeDrawer() {
-  const { canjeOpen, closeTradeIn, tradeTarget, setTradeTarget, products, settings } = useSite();
+  const { canjeOpen, closeTradeIn, tradeTarget, setTradeTarget } = useSite();
   const desktop = useIsDesktop();
-  const models = settings.tradeIn.models.map((m) => m.name).filter(Boolean);
-  const phones = useMemo(() => products.filter((p) => p.category === "celulares"), [products]);
-
+  const f = useTradeInForm(tradeTarget, setTradeTarget);
   const [step, setStep] = useState(0);
-  const [model, setModel] = useState("");
-  const [capacity, setCapacity] = useState("");
-  const [battery, setBattery] = useState("");
-  const [look, setLook] = useState("");
-  const [works, setWorks] = useState<"si" | "no" | "">("");
-  const [fault, setFault] = useState("");
-  const [parts, setParts] = useState<"No" | "Sí" | "No sé" | "">("");
-  const [tab, setTab] = useState<"usados" | "nuevos">("usados");
-  const [name, setName] = useState("");
-
-  // al abrir desde una tarjeta, posiciona la pestaña del equipo elegido
-  useEffect(() => {
-    const t = phones.find((p) => p.id === tradeTarget);
-    if (t) setTab(t.condition === "usado" || t.condition === "reacondicionado" ? "usados" : "nuevos");
-  }, [tradeTarget, phones]);
 
   useEffect(() => {
     if (!canjeOpen) return;
@@ -95,26 +68,11 @@ export function CanjeDrawer() {
     };
   }, [canjeOpen, closeTradeIn]);
 
-  const ok = [!!model && !!capacity, !!look && !!works && !!parts && (works === "si" || fault.trim().length > 2), true];
-  const target = phones.find((p) => p.id === tradeTarget);
-
-  const message = [
-    `¡Hola Liberados! Quiero cotizar mi iPhone con el Plan Canje${name.trim() ? ` (soy ${name.trim()})` : ""}:`,
-    `• Mi equipo: ${model} ${capacity}`,
-    battery ? `• Batería: ${battery} %` : "• Batería: no sé",
-    `• Estado: ${look}`,
-    works === "si" ? "• Funciona todo correctamente" : `• Tiene una falla: ${fault.trim()}`,
-    `• Piezas cambiadas: ${parts}`,
-    target ? `• Me interesa: ${target.name}${target.storage ? " " + target.storage : ""}${target.colorName ? " " + target.colorName : ""}` : "• Todavía no elegí el nuevo",
-  ].join("\n");
-
-  function send() {
-    window.open(waLink(settings.contact.whatsapp, message), "_blank");
-  }
+  const ok = [true, f.deviceOk, f.stateOk];
 
   const panel = desktop
     ? { initial: { x: "100%" }, animate: { x: 0 }, exit: { x: "100%" }, className: "inset-y-0 right-0 w-[min(480px,100vw)] border-l" }
-    : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" }, className: "inset-x-0 bottom-0 max-h-[92dvh] border-t" };
+    : { initial: { y: "100%" }, animate: { y: 0 }, exit: { y: "100%" }, className: "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-[28px] border-t" };
 
   return (
     <AnimatePresence>
@@ -130,26 +88,26 @@ export function CanjeDrawer() {
             animate={panel.animate}
             exit={panel.exit}
             transition={{ duration: 0.6, ease }}
-            className={clsx("absolute flex flex-col border-line bg-ink text-fg", panel.className)}
+            className={clsx("absolute flex flex-col overflow-hidden border-line bg-ink text-fg", panel.className)}
           >
-            <div aria-hidden className="h-[2px] shrink-0 bg-brand" />
+            <div aria-hidden className="h-1 shrink-0 bg-brand" />
             {/* encabezado */}
             <div className="border-b border-line px-6 pb-4 pt-5">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="eyebrow">Plan Canje</p>
-                  <h2 className="title-lux mt-2 text-2xl !font-medium">Entregá tu iPhone</h2>
-                  <p className="mt-1 text-sm text-muted">Contanos cómo está y te pasamos la cotización por WhatsApp.</p>
+                  <h2 className="title-lux mt-2 text-3xl">Entregá tu <b>iPhone</b></h2>
+                  <p className="mt-1 text-sm text-muted">Elegí el que te querés llevar y mirá en vivo cuánto pagás.</p>
                 </div>
-                <button type="button" onClick={closeTradeIn} aria-label="Cerrar" className="grid h-10 w-10 shrink-0 place-items-center border border-line transition hover:border-fg hover:bg-fg hover:text-ink">
+                <button type="button" onClick={closeTradeIn} aria-label="Cerrar" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-fg/[.07] ring-1 ring-line transition hover:bg-fg/15">
                   <X className="h-4 w-4" strokeWidth={1.5} />
                 </button>
               </div>
               <ol className="mt-5 grid grid-cols-3 gap-2" aria-label="Pasos">
                 {STEPS.map((s, i) => (
                   <li key={s}>
-                    <span className={clsx("block h-px transition-colors duration-500", i <= step ? "bg-brand" : "bg-line-strong")} />
-                    <span className={clsx("font-display mt-2 block text-[10px] uppercase tracking-[0.16em]", i === step ? "text-fg" : "text-muted")}>
+                    <span className={clsx("block h-1 rounded-full transition-colors duration-500", i <= step ? "bg-brand" : "bg-fg/10")} />
+                    <span className={clsx("mt-2 block text-xs font-semibold", i === step ? "text-fg" : "text-muted")}>
                       {i + 1}. {s}
                     </span>
                   </li>
@@ -162,124 +120,27 @@ export function CanjeDrawer() {
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35, ease }} className="space-y-7">
                   {step === 0 && (
-                    <>
-                      <Q title="¿Qué iPhone tenés?">
-                        <select
-                          value={model}
-                          onChange={(e) => setModel(e.target.value)}
-                          className="h-12 w-full border border-line bg-transparent px-3 text-[16px] text-fg outline-none focus:border-line-strong [&>option]:text-text-dark"
-                        >
-                          <option value="">Elegí el modelo</option>
-                          {models.map((m) => (
-                            <option key={m} value={m}>{m}</option>
-                          ))}
-                        </select>
-                      </Q>
-                      <Q title="Capacidad">
-                        <Chips options={CAPACITIES} value={capacity} onChange={setCapacity} />
-                      </Q>
-                      <Q title="Salud de batería" hint="En el iPhone: Ajustes › Batería › Estado. Si no sabés, dejalo vacío.">
-                        <div className="relative w-40">
-                          <input
-                            inputMode="numeric"
-                            value={battery}
-                            onChange={(e) => setBattery(e.target.value.replace(/\D/g, "").slice(0, 3))}
-                            placeholder="Ej.: 87"
-                            className="h-12 w-full border border-line bg-transparent px-3 pr-9 text-[16px] text-fg outline-none placeholder:text-muted focus:border-line-strong"
-                          />
-                          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">%</span>
-                        </div>
-                      </Q>
-                    </>
+                    <Q title="¿Cuál te querés llevar?" hint="Elegilo y mirá en vivo cuánto pagás. Si todavía no sabés, seguí igual.">
+                      <PhonePicker f={f} />
+                    </Q>
                   )}
-
-                  {step === 1 && (
-                    <>
-                      <Q title="¿Cómo está por fuera?">
-                        <div className="grid gap-2">
-                          {LOOKS.map((l) => (
-                            <Option key={l.id} active={look === l.id} onClick={() => setLook(l.id)}>
-                              <span className="block">{l.id}</span>
-                              <span className="block text-xs opacity-60">{l.hint}</span>
-                            </Option>
-                          ))}
-                        </div>
-                      </Q>
-                      <Q title="¿Funciona todo bien?">
-                        <div className="grid grid-cols-2 gap-2">
-                          <Option active={works === "si"} onClick={() => setWorks("si")}>Sí, todo funciona</Option>
-                          <Option active={works === "no"} onClick={() => setWorks("no")}>Tiene alguna falla</Option>
-                        </div>
-                        {works === "no" && (
-                          <textarea
-                            value={fault}
-                            onChange={(e) => setFault(e.target.value.slice(0, 140))}
-                            rows={2}
-                            placeholder="¿Qué falla? (Face ID, cámara, parlante…)"
-                            className="mt-2 w-full border border-line bg-transparent p-3 text-[15px] text-fg outline-none placeholder:text-muted focus:border-line-strong"
-                          />
-                        )}
-                      </Q>
-                      <Q title="¿Le cambiaron alguna pieza?" hint="Pantalla, batería, cámara…">
-                        <div className="grid grid-cols-3 gap-2">
-                          {(["No", "Sí", "No sé"] as const).map((v) => (
-                            <Option key={v} active={parts === v} onClick={() => setParts(v)}>{v}</Option>
-                          ))}
-                        </div>
-                      </Q>
-                    </>
-                  )}
-
+                  {step === 1 && <DeviceQuestions f={f} />}
                   {step === 2 && (
                     <>
-                      <Q title="¿Por cuál lo querés cambiar?" hint="Opcional: si todavía no sabés, te asesoramos.">
-                        <div className="mb-3 flex gap-6 border-b border-line">
-                          {(["usados", "nuevos"] as const).map((t) => (
-                            <button
-                              key={t}
-                              type="button"
-                              onClick={() => setTab(t)}
-                              className={clsx("font-display relative pb-3 text-[11px] uppercase tracking-[0.2em]", tab === t ? "text-fg" : "text-muted")}
-                            >
-                              {t === "usados" ? "Usados seleccionados" : "Nuevos en caja"}
-                              {tab === t && <span className="absolute inset-x-0 -bottom-px h-[2px] bg-brand" />}
-                            </button>
-                          ))}
-                        </div>
-                        <div className="grid gap-2">
-                          {phones
-                            .filter((p) => (tab === "usados" ? p.condition === "usado" || p.condition === "reacondicionado" : p.condition !== "usado" && p.condition !== "reacondicionado"))
-                            .map((p) => (
-                              <button
-                                key={p.id}
-                                type="button"
-                                onClick={() => setTradeTarget(tradeTarget === p.id ? null : p.id)}
-                                className={clsx("flex items-center gap-3 border p-2 pr-3 text-left transition-colors", tradeTarget === p.id ? "border-fg bg-fg/[.06]" : "border-line hover:border-line-strong")}
-                              >
-                                <span className="h-12 w-12 shrink-0">
-                                  <ProductVisual product={p} />
-                                </span>
-                                <span className="min-w-0 flex-1">
-                                  <span className="block text-[15px]">{p.name} <span className="text-muted">{p.storage}</span></span>
-                                  <span className="block text-xs text-muted">{[p.colorName, p.battery ? `Batería ${p.battery}%` : null].filter(Boolean).join(" · ")}</span>
-                                </span>
-                                {tradeTarget === p.id && <Check className="h-4 w-4 shrink-0 text-accent" />}
-                              </button>
-                            ))}
-                        </div>
-                      </Q>
-                      <Q title="Tu nombre" hint="Opcional, para saber con quién hablamos.">
-                        <input
-                          value={name}
-                          onChange={(e) => setName(e.target.value.slice(0, 40))}
-                          className="h-12 w-full border border-line bg-transparent px-3 text-[16px] text-fg outline-none focus:border-line-strong"
-                        />
-                      </Q>
-                      <p className="border-brand border-l pl-3 text-sm text-muted">{settings.tradeIn.note}</p>
+                      <StateQuestions f={f} />
+                      <NameField f={f} />
+                      <p className="rounded-2xl bg-fg/[.05] p-3 text-sm text-muted">{f.settings.tradeIn.note}</p>
                     </>
                   )}
                 </motion.div>
               </AnimatePresence>
+            </div>
+
+            {/* resultado en vivo: solo la diferencia a pagar */}
+            <div className="relative overflow-hidden border-t border-line bg-fg/[.04] px-6 py-4">
+              <div className="pointer-events-none absolute -left-10 -top-16 h-40 w-40 rounded-full bg-cyan/20 blur-[60px]" />
+              <div className="pointer-events-none absolute -bottom-16 right-0 h-40 w-40 rounded-full bg-pink/25 blur-[60px]" />
+              <LiveResult f={f} />
             </div>
 
             {/* pie */}
@@ -298,7 +159,7 @@ export function CanjeDrawer() {
                   Continuar <ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <button type="button" onClick={send} className="btn-solid flex-1">
+                <button type="button" onClick={f.send} disabled={!f.stateOk} className="flex min-h-[52px] flex-1 disabled:pointer-events-none disabled:opacity-30 items-center justify-center gap-2 rounded-full bg-[#1fae55] text-[16px] font-bold text-white transition hover:brightness-110">
                   <WhatsAppIcon className="h-4 w-4" /> Enviar por WhatsApp
                 </button>
               )}
@@ -307,40 +168,5 @@ export function CanjeDrawer() {
         </motion.div>
       )}
     </AnimatePresence>
-  );
-}
-
-function Q({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
-  return (
-    <div>
-      <h3 className="title-lux text-xl !font-medium">{title}</h3>
-      {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
-      <div className="mt-3">{children}</div>
-    </div>
-  );
-}
-
-function Option({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={clsx("min-h-12 border px-4 py-3 text-left text-[15px] transition-colors", active ? "border-fg bg-fg text-ink" : "border-line text-fg hover:border-line-strong")}
-    >
-      {children}
-    </button>
-  );
-}
-
-function Chips({ options, value, onChange }: { options: string[]; value: string; onChange: (v: string) => void }) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((o) => (
-        <Option key={o} active={value === o} onClick={() => onChange(o)}>
-          {o}
-        </Option>
-      ))}
-    </div>
   );
 }

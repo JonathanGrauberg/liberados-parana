@@ -15,26 +15,28 @@ export function Footer() {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.mapsQuery)}`;
 
   return (
-    <footer className="relative overflow-hidden border-t border-line bg-ink px-5 pb-10 pt-16 md:px-8 md:pt-20">
+    <footer className="relative overflow-hidden px-5 pb-10 pt-10 md:px-8 md:pt-16">
       <div className="mx-auto max-w-7xl">
-        {/* Lista de ofertas por WhatsApp */}
-        <div className="ring-brand relative p-7 md:p-10">
+        {/* Agendarnos en WhatsApp para ver las ofertas (estados) */}
+        <div className="relative overflow-hidden rounded-[32px] bg-ink-2 p-7 ring-1 ring-line md:p-10">
+          <div className="pointer-events-none absolute -left-20 -top-24 h-72 w-72 rounded-full bg-cyan/25 blur-[90px]" />
+          <div className="pointer-events-none absolute -bottom-24 right-0 h-72 w-72 rounded-full bg-pink/25 blur-[90px]" />
           <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
             <div>
               <p className="eyebrow flex items-center gap-2">
-                <BellRing className="h-3.5 w-3.5" strokeWidth={1.5} /> Ofertas primero
+                <BellRing className="h-4 w-4" /> Ofertas primero
               </p>
               <p className="title-lux mt-4 max-w-xl text-[clamp(26px,3.2vw,40px)]">
-                Enterate antes que nadie de los ingresos y las promos.
+                Agreganos para ver las ofertas.
               </p>
             </div>
             <a
-              href={waLink(contact.whatsapp, "¡Hola Liberados! Quiero sumarme a la lista de difusión de ofertas 🙌")}
+              href={waLink(contact.whatsapp, "¡Hola Liberados! Los agendo para ver las ofertas 🙌")}
               target="_blank"
               rel="noopener"
-              className="btn-outline shrink-0"
+              className="inline-flex h-14 shrink-0 items-center gap-3 rounded-full bg-[#1fae55] px-7 text-lg font-semibold text-white transition hover:brightness-110"
             >
-              <WhatsAppIcon className="h-4 w-4" /> Sumarme a la lista
+              <WhatsAppIcon className="h-6 w-6" /> Agregar a WhatsApp
             </a>
           </div>
         </div>
@@ -63,7 +65,7 @@ export function Footer() {
               <a
                 href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}
                 aria-label="Llamar al local"
-                className="grid h-10 w-10 place-items-center border border-line text-fg/80 transition duration-300 hover:border-fg hover:bg-fg hover:text-ink"
+                className="grid h-10 w-10 place-items-center rounded-full bg-fg/[.08] text-fg ring-1 ring-line transition hover:scale-110"
               >
                 <Phone className="h-4 w-4" strokeWidth={1.5} />
               </a>
@@ -84,8 +86,8 @@ export function Footer() {
 function FooterCol({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <p className="eyebrow">{title}</p>
-      <ul className="mt-5 space-y-3 text-[15px] text-fg/65">{children}</ul>
+      <p className="font-display text-lg font-bold">{title}</p>
+      <ul className="mt-4 space-y-3 text-[15px] text-muted">{children}</ul>
     </div>
   );
 }
@@ -102,7 +104,7 @@ export function WhatsAppFab() {
       target="_blank"
       rel="noopener"
       aria-label="Escribinos por WhatsApp"
-      className="fixed bottom-5 right-5 z-50 grid h-13 w-13 place-items-center border border-line-strong bg-ink/80 p-3.5 text-fg backdrop-blur transition duration-300 hover:border-fg hover:bg-fg hover:text-ink"
+      className="fixed bottom-5 right-5 z-50 grid h-14 w-14 place-items-center rounded-full bg-[#1fae55] text-white shadow-[0_12px_40px_rgba(31,174,85,.45)] transition hover:scale-105"
     >
       <WhatsAppIcon className="h-6 w-6" />
     </motion.a>

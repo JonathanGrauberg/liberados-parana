@@ -3,61 +3,31 @@
 /* ───────────── TOKENS DE MARCA ─────────────
    Cambiar acá colores y radios; todo el sitio los hereda. */
 :root {
-  --ink: #0b0b0e;          /* fondo oscuro principal */
-  --ink-2: #131317;        /* superficies / tarjetas */
-  --ink-3: #1a1a1f;        /* paneles de imagen */
-  --fg: #ecebf0;           /* texto principal */
-  --muted: #8b8a93;        /* texto secundario */
-  --line: rgba(255, 255, 255, 0.09);        /* líneas finas */
-  --line-strong: rgba(255, 255, 255, 0.22);
-  --accent: var(--cyan);   /* único acento: subrayados y estados activos */
+  --ink: #1a1764;          /* sólido para paneles (drawer, textos sobre pastillas) */
+  --ink-2: rgba(132, 120, 255, 0.1);  /* tarjetas: vidrio violeta claro sobre el fondo */
+  --ink-3: rgba(132, 120, 255, 0.16);  /* paneles de imagen */
+  --fg: #ffffff;           /* texto principal */
+  --muted: #b4b2e6;        /* texto secundario */
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.3);
+  --accent: var(--cyan);   /* etiquetas y estados activos */
   --ease-lux: cubic-bezier(0.16, 1, 0.3, 1);
   --indigo: #2b2a80;       /* azul del cartel */
   --cyan: #3ee6e8;         /* inicio del degradé del logo */
   --violet: #7b7fdc;
   --pink: #f06bb5;         /* fin del degradé del logo */
-  --paper: #f5f5f7;        /* fondo claro estilo Apple */
+  --paper: #f5f5f7;
   --text-dark: #1d1d1f;
   --text-mute: #6e6e73;
   --brand-gradient: linear-gradient(120deg, var(--cyan) 0%, var(--violet) 50%, var(--pink) 100%);
   /* el mismo degradé para textos (en modo claro se oscurece para que se lea) */
-  --brand-text: var(--brand-gradient);
+  --brand-text: linear-gradient(120deg, #7ff6f7 0%, #c9caff 50%, #ffb3dc 100%); /* versión clara para leerse sobre el fondo */
+  /* FONDO DE LA WEB: el degradé de las letras del logo (azul → violeta → rosa), en tono profundo para que el texto blanco se lea */
+  --page-gradient: linear-gradient(165deg, #1b1f5e 0%, #1d1a55 35%, #241b5e 70%, #2a1a5c 100%);
 }
 
 /* ───────────── MODO CLARO (lo elige el visitante con el botón del navbar) ───────────── */
-:root {
-  --ped-edge: #0c0c0f;
-  --ped-mid: #24242a;
-  --ped-top-1: #2a2a31;
-  --ped-top-2: #141418;
-  --ped-rim: rgba(255, 255, 255, 0.22);
-  --map-side: #1c1c22;
-  --map-face: #131317;
-  --map-er: #16282b;
-  --map-stroke: rgba(255, 255, 255, 0.14);
-}
-html[data-theme="light"] {
-  --ink: #f4f3ef;
-  --ink-2: #ebe9e4;
-  --ink-3: #e2e0da;
-  --fg: #141417;
-  --muted: #6b6a72;
-  --line: rgba(0, 0, 0, 0.1);
-  --line-strong: rgba(0, 0, 0, 0.26);
-  --accent: #0b8a8d;
-  --brand-text: linear-gradient(120deg, #0a9a9d 0%, #5a5fd0 50%, #d4448f 100%);
-  --ped-edge: #cfccc5;
-  --ped-mid: #f3f2ee;
-  --ped-top-1: #ffffff;
-  --ped-top-2: #e6e4de;
-  --ped-rim: rgba(0, 0, 0, 0.18);
-  --map-side: #d9d6cf;
-  --map-face: #ecebe6;
-  --map-er: #cfe9ea;
-  --map-stroke: rgba(0, 0, 0, 0.16);
-  color-scheme: light;
-}
-@custom-variant light (&:where([data-theme="light"], [data-theme="light"] *));
+
 
 @theme inline {
   --color-ink: var(--ink);
@@ -80,15 +50,13 @@ html[data-theme="light"] {
 
 html {
   -webkit-text-size-adjust: 100%;
+  color-scheme: dark;
 }
-html { color-scheme: dark; }
 body {
-  background: var(--ink);
-  transition: background-color 0.5s, color 0.5s;
+  background: #1d1a55;
   color: var(--fg);
   font-family: var(--font-text), system-ui, sans-serif;
   font-size: 17px;
-  font-weight: 300;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -117,13 +85,8 @@ body {
 /* borde fino con el degradé de marca (en el lado que tenga ancho) */
 .border-brand { border-image: var(--brand-gradient) 1; }
 
-@keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
 .glass {
-  background: rgba(10, 10, 32, 0.6);
+  background: color-mix(in srgb, var(--ink) 65%, transparent);
   backdrop-filter: saturate(180%) blur(20px);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
@@ -154,68 +117,74 @@ body {
 }
 
 /* ───────────── PIEZAS DE ESTILO (sitio público) ───────────── */
-/* Etiqueta chica numerada: "01 — Catálogo" */
+/* Etiqueta chica sobre los títulos */
 .eyebrow {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 11px;
-  font-weight: 400;
-  letter-spacing: 0.32em;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
 }
+/* Botón principal: píldora con el degradé de marca */
 .btn-solid,
 .btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.7em;
-  min-height: 48px;
-  padding: 0 22px;
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  transition: background-color 0.4s, color 0.4s, border-color 0.4s, gap 0.5s var(--ease-lux);
+  gap: 0.55em;
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 9999px;
+  font-size: 16px;
+  font-weight: 600;
+  transition: transform 0.3s var(--ease-lux), filter 0.3s, background-color 0.3s, box-shadow 0.3s;
 }
-.btn-solid { background: var(--fg); color: var(--ink); border: 1px solid var(--fg); }
-.btn-solid:hover { background: transparent; color: var(--fg); gap: 1.1em; }
-.btn-outline { border: 1px solid var(--line-strong); color: var(--fg); }
-.btn-outline:hover { background: var(--fg); color: var(--ink); border-color: var(--fg); }
-/* Enlace con subrayado de acento */
+.btn-solid {
+  background: var(--brand-gradient);
+  color: #07071a;
+  font-weight: 700;
+  box-shadow: 0 12px 40px -12px rgba(123, 127, 220, 0.75);
+}
+.btn-solid:hover { transform: translateY(-1px) scale(1.02); filter: brightness(1.06); }
+.btn-outline {
+  border: 1px solid var(--line-strong);
+  color: var(--fg);
+  background: color-mix(in srgb, var(--fg) 4%, transparent);
+}
+.btn-outline:hover { background: color-mix(in srgb, var(--fg) 10%, transparent); }
+/* Enlace con subrayado de degradé */
 .link-line {
   display: inline-flex;
   align-items: center;
-  gap: 0.6em;
-  padding-bottom: 4px;
-  border-bottom: 1px solid transparent;
+  gap: 0.5em;
+  padding-bottom: 3px;
+  border-bottom: 2px solid transparent;
   border-image: var(--brand-gradient) 1;
-  font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
+  font-size: 15px;
+  font-weight: 600;
   transition: gap 0.5s var(--ease-lux);
 }
-.link-line:hover { gap: 1.1em; }
-/* Título liviano con remate en medium: <h2 class="title-lux">Una frase <b>que remata.</b></h2> */
+.link-line:hover { gap: 0.9em; }
+/* Título en negrita con remate en degradé: <h2 class="title-lux">Una frase <b>que remata.</b></h2> */
 .title-lux {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
 }
-.title-lux b { font-weight: 500; }
+.title-lux b { font-weight: 800; }
 
 /* Pegado debajo del navbar; sube a 0 cuando el navbar se oculta */
 .sticky-under-nav {
   position: sticky;
-  top: 64px;
+  top: 96px; /* franja del dólar (32) + navbar */
   transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 @media (min-width: 768px) {
-  .sticky-under-nav { top: 72px; }
+  .sticky-under-nav { top: 104px; }
 }
-html[data-nav="hidden"] .sticky-under-nav { top: 0; }
+html[data-nav="hidden"] .sticky-under-nav { top: 32px; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
@@ -249,4 +218,17 @@ html.lenis, html.lenis body { height: auto; }
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Fondo fijo con el degradé del logo + brillos cian y rosa (fixed en un div: anda bien en iPhone) */
+.site-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(45% 40% at 10% 8%, rgba(62, 110, 232, 0.35), transparent 70%),
+    radial-gradient(45% 40% at 95% 45%, rgba(150, 70, 210, 0.45), transparent 70%),
+    radial-gradient(40% 35% at 85% 95%, rgba(240, 107, 181, 0.3), transparent 70%),
+    radial-gradient(50% 40% at 20% 75%, rgba(110, 100, 230, 0.25), transparent 70%),
+    var(--page-gradient);
 }

@@ -7,9 +7,9 @@ export function SectionHead({ n, label, title, link, aside }: { n: string; label
     <Reveal className="flex flex-wrap items-end justify-between gap-6">
       <div>
         <p className="eyebrow">
-          {n} — {label}
+          {label}
         </p>
-        <h2 className="title-lux mt-4 text-[clamp(32px,4.4vw,58px)]">{title}</h2>
+        <h2 className="title-lux mt-3 text-[clamp(34px,5vw,68px)]">{title}</h2>
       </div>
       {link && (
         <a href={link.href} className="link-line">

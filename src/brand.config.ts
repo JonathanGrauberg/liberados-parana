@@ -13,10 +13,10 @@ export const brand = {
   shortName: "Liberados",
   tagline: "Celulares y tecnología",
   description:
-    "Celulares nuevos, sellados y usados, accesorios y plan canje en Paraná, Entre Ríos. Equipos liberados para cualquier compañía.",
+    "Celulares nuevos, sellados y usados, accesorios y plan canje en Paraná, Entre Ríos.",
   // Colores del logo (los mismos que en globals.css, para usar desde JS/canvas)
   colors: {
-    ink: "#04040e",
+    ink: "#1d1a55",
     indigo: "#2b2a80",
     cyan: "#3ee6e8",
     violet: "#7b7fdc",

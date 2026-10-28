@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowLeftRight, Check, ShieldCheck, X } from "lucide-react";
+import { ArrowLeftRight, Check, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 import { conditions } from "@/brand.config";
@@ -73,12 +73,12 @@ export function ProductModal() {
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 32 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative max-h-[94dvh] w-full max-w-6xl overflow-y-auto border border-line bg-ink"
+            className="relative max-h-[94dvh] w-full max-w-6xl overflow-y-auto rounded-t-[28px] bg-ink-2 ring-1 ring-line md:rounded-[28px]"
           >
             <div className="sticky top-0 z-30 h-0">
               <button
                 onClick={() => openProduct(null)}
-                className="absolute right-4 top-4 grid h-11 w-11 place-items-center border border-line bg-ink/70 backdrop-blur transition duration-300 hover:border-fg hover:bg-fg hover:text-ink"
+                className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-fg/10 ring-1 ring-line backdrop-blur transition hover:bg-fg/20"
                 aria-label="Cerrar"
               >
                 <X className="h-5 w-5" strokeWidth={1.5} />
@@ -87,7 +87,8 @@ export function ProductModal() {
 
             {/* Escenario: equipo al centro y características con flechas */}
             <div
-              className="relative overflow-hidden border-b border-line bg-ink-2 px-4 pb-6 pt-14 md:px-8 md:pt-10"
+              className="relative overflow-hidden px-4 pb-6 pt-14 md:px-8 md:pt-10"
+              style={{ background: `radial-gradient(45% 60% at 50% 45%, color-mix(in oklab, ${p.color} 45%, transparent), transparent 70%), linear-gradient(180deg, var(--ink-3), var(--ink-2))` }}
             >
               <div className="relative mx-auto h-[300px] max-w-5xl md:h-[440px]">
                 <AnimatePresence mode="wait">
@@ -117,7 +118,7 @@ export function ProductModal() {
                     <button
                       key={src}
                       onClick={() => setImg(i)}
-                      className={clsx("h-14 w-14 overflow-hidden border p-1 transition", i === img ? "border-line-strong" : "border-line opacity-50 hover:opacity-100")}
+                      className={clsx("h-14 w-14 overflow-hidden rounded-xl bg-fg/[.06] p-1 ring-2 transition", i === img ? "ring-cyan" : "ring-transparent opacity-60 hover:opacity-100")}
                       aria-label={`Foto ${i + 1}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -136,7 +137,7 @@ export function ProductModal() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.2 + i * 0.07 }}
-                      className="border border-line px-3.5 py-2.5"
+                      className="rounded-2xl bg-fg/[.05] px-3.5 py-2.5 ring-1 ring-line"
                     >
                       <p className="eyebrow !text-[10px]">{c.label}</p>
                       <p className="mt-1 text-[15px] leading-tight">{c.value}</p>
@@ -154,33 +155,32 @@ export function ProductModal() {
                   {p.priceOnRequest ? <Badge tone="cyan">Consultá disponibilidad</Badge> : p.stock <= 0 ? <Badge tone="gray">Sin stock — consultá</Badge> : p.condition === "usado" ? <Badge tone="cyan">Unidad única</Badge> : p.stock <= 2 ? <Badge tone="amber">Últimas unidades</Badge> : <Badge tone="cyan">En stock</Badge>}
                 </div>
                 <p className="mt-5 text-muted">{p.brand}</p>
-                <h3 className="title-lux text-4xl !font-medium md:text-5xl">{p.name}</h3>
+                <h3 className="title-lux text-4xl md:text-5xl">{p.name}</h3>
                 <p className="mt-2 text-lg text-muted">{[p.storage, p.colorName].filter(Boolean).join(" · ")}</p>
                 {p.description && <p className="mt-5 max-w-xl text-lg leading-relaxed text-fg/70">{p.description}</p>}
                 <ul className="mt-6 space-y-2 text-[15px] text-muted">
-                  <li className="flex items-center gap-2"><ShieldCheck className="h-4 w-4 text-fg/60" strokeWidth={1.5} /> Liberado para cualquier compañía</li>
-                  <li className="flex items-center gap-2"><Check className="h-4 w-4 text-fg/60" strokeWidth={1.5} /> Lo probás en el local antes de llevarlo</li>
+                  <li className="flex items-center gap-2"><Check className="h-5 w-5 text-accent" /> Lo probás en el local antes de llevarlo</li>
                 </ul>
               </div>
 
-              <div className="border border-line p-6">
-                {off > 0 && <p className="text-gradient font-display mb-1 w-fit text-xs font-medium tracking-[0.1em]">−{off}%</p>}
+              <div className="rounded-3xl bg-fg/[.04] p-6 ring-1 ring-line">
+                {off > 0 && <p className="mb-2 w-fit rounded-full bg-pink px-2.5 py-1 text-xs font-extrabold text-ink">−{off}%</p>}
                 <Price p={p} size="lg" />
                 <div className="mt-6 grid gap-3">
                   <a
                     href={waLink(settings.contact.whatsapp, msg)}
                     target="_blank"
                     rel="noopener"
-                    className="btn-solid w-full !min-h-[54px]"
+                    className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#1fae55] text-lg font-semibold text-white transition hover:brightness-110 active:scale-[.98]"
                   >
-                    <WhatsAppIcon className="h-4 w-4" /> Consultar por WhatsApp
+                    <WhatsAppIcon className="h-6 w-6" /> Consultar por WhatsApp
                   </a>
                   {p.category === "celulares" && (
                     <button
                       onClick={() => startTradeIn(p.id)}
-                      className="btn-outline w-full !min-h-[54px]"
+                      className="ring-brand flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-fg/[.04] text-lg font-semibold transition hover:bg-fg/[.08] active:scale-[.98]"
                     >
-                      <ArrowLeftRight className="h-4 w-4" /> Entregar mi iPhone
+                      <ArrowLeftRight className="h-5 w-5" /> Entregar mi iPhone
                     </button>
                   )}
                 </div>
@@ -205,20 +205,20 @@ function Callout({ spec, side, top, delay }: { spec: Spec; side: "left" | "right
         initial={{ opacity: 0, x: left ? -16 : 16 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay, duration: 0.6, ease }}
-        className={clsx("shrink-0 border border-line bg-ink/70 px-4 py-2.5 backdrop-blur", left ? "text-right" : "text-left")}
+        className={clsx("shrink-0 rounded-2xl bg-fg/[.07] px-4 py-2.5 ring-1 ring-line backdrop-blur", left ? "text-right" : "text-left")}
       >
         <p className="eyebrow !text-[10px]">{spec.label}</p>
-        <p className="mt-1 text-[15px] leading-tight">{spec.value}</p>
+        <p className="font-display mt-1 text-[15px] font-bold leading-tight">{spec.value}</p>
       </motion.div>
       {/* línea que crece hacia el equipo */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ delay: delay + 0.25, duration: 0.7, ease }}
-        className={clsx("relative h-px flex-1", left ? "origin-left bg-gradient-to-r" : "origin-right bg-gradient-to-l", "from-fg/5 to-fg/50")}
+        className={clsx("relative h-px flex-1", left ? "origin-left bg-gradient-to-r" : "origin-right bg-gradient-to-l", "from-fg/10 to-cyan")}
       >
-        <span className={clsx("absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-brand", left ? "-right-0.5" : "-left-0.5")} />
-        <span className={clsx("absolute top-1/2 h-4 w-4 -translate-y-1/2 rounded-full border border-accent/50", left ? "-right-2" : "-left-2")} />
+        <span className={clsx("absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_12px_var(--cyan)]", left ? "-right-0.5" : "-left-0.5")} />
+        <span className={clsx("absolute top-1/2 h-4 w-4 -translate-y-1/2 animate-ping rounded-full bg-cyan/40", left ? "-right-2" : "-left-2")} />
       </motion.div>
     </div>
   );

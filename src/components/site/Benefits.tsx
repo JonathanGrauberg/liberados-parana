@@ -1,11 +1,10 @@
 "use client";
 
-import { ArrowLeftRight, BadgeCheck, CreditCard, ShieldCheck, Wrench } from "lucide-react";
+import { ArrowLeftRight, BadgeCheck, CreditCard, Wrench } from "lucide-react";
 import { motion } from "motion/react";
 
 const items = [
   { icon: BadgeCheck, title: "Equipos originales", sub: "Revisados uno por uno" },
-  { icon: ShieldCheck, title: "Garantía escrita", sub: "En cada equipo" },
   { icon: CreditCard, title: "Hasta 12 cuotas", sub: "Con tarjeta de crédito" },
   { icon: ArrowLeftRight, title: "Plan canje", sub: "Tu usado como parte de pago" },
   { icon: Wrench, title: "Te lo configuramos", sub: "Pasamos tus datos y WhatsApp" },
@@ -14,21 +13,23 @@ const items = [
 /** Franja de "por qué elegirnos". */
 export function Benefits() {
   return (
-    <section className="bg-ink px-5 md:px-8">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 border-l border-t border-line md:grid-cols-5">
+    <section className="px-5 pb-6 md:px-8">
+      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-line ring-1 ring-line md:grid-cols-4">
         {items.map(({ icon: Icon, title, sub }, i) => (
           <motion.div
             key={title}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: i * 0.08 }}
-            className="flex flex-col gap-4 border-b border-r border-line p-5 md:p-6 [&:last-child]:col-span-2 md:[&:last-child]:col-span-1"
+            transition={{ duration: 0.6, delay: i * 0.06 }}
+            className="flex items-center gap-3 bg-ink-2 p-4 md:p-5"
           >
-            <Icon className="h-5 w-5 text-fg/60" strokeWidth={1.2} />
-            <span>
-              <span className="block text-[15px] font-normal">{title}</span>
-              <span className="mt-0.5 block text-xs text-muted">{sub}</span>
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[linear-gradient(135deg,rgba(62,230,232,.18),rgba(240,107,181,.18))] text-accent ring-1 ring-line">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="leading-tight">
+              <span className="block text-[14px] font-semibold">{title}</span>
+              <span className="block text-xs text-muted">{sub}</span>
             </span>
           </motion.div>
         ))}

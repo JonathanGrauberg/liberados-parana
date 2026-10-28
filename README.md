@@ -21,8 +21,9 @@ npm run dev -- --port 3210
 - Producto estrella, destacados en galería horizontal, texto que se ilumina al scrollear.
 - Cotizador de Plan Canje (3 preguntas → valor estimado y diferencia a pagar → WhatsApp).
 - Precios en dólares (efectivo y lista) con el equivalente en pesos según la cotización que carga el local; "Consultá precio" para los que no se publican.
-- Modo claro / oscuro a elección del visitante (se recuerda en su navegador).
-- Cartel de bienvenida editable, horarios con "Abierto ahora" (hora de Argentina) y mapa 3D de Argentina que vuela hasta Paraná.
+- Fondo fijo con el degradé del logo (índigo → violeta → rosa). Se cambia en `--page-gradient` y `.site-bg` de `globals.css`.
+- Plan Canje: el cliente nunca ve cuánto le toman el equipo; solo ve "Para llevarte el X pagás: U$S …" con el número contando. Valores máximos por modelo y porcentajes en Panel › Ajustes.
+- Cartel de bienvenida editable, horarios con "Abierto ahora" (hora de Argentina) y mapa de Google Maps del local.
 
 **Panel** (`src/app/admin-lp`) — pensado para usarlo desde el celular
 - Productos: precio en dólares o pesos (efectivo, lista, a consultar), proveedor interno, fotos desde la cámara, **quitar fondo con IA en el propio navegador**, color de brillo automático, stock con +/−, visible/destacado.
