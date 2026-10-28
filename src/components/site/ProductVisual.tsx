@@ -2,9 +2,62 @@
 
 import clsx from "clsx";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "motion/react";
-import type { PointerEvent } from "react";
+import { useEffect, useRef, useState, type PointerEvent } from "react";
 import type { PublicProduct } from "@/lib/types";
 import { categoryIcon } from "./icons";
+
+/** ¿La foto tiene el fondo recortado (esquina transparente)? */
+function isCutout(img: HTMLImageElement) {
+  try {
+    const c = document.createElement("canvas");
+    c.width = c.height = 8;
+    const ctx = c.getContext("2d");
+    if (!ctx) return true;
+    ctx.drawImage(img, 0, 0, 8, 8);
+    return ctx.getImageData(0, 0, 1, 1).data[3] < 20;
+  } catch {
+    return true;
+  }
+}
+
+/**
+ * Foto que llena todo el recuadro (tarjetas del catálogo). Si la foto tiene el fondo recortado,
+ * se muestra entera con margen para no cortar el equipo; si tiene fondo propio, ocupa todo.
+ */
+export function ProductPhotoFill({ product, index = 0, className }: { product: PublicProduct; index?: number; className?: string }) {
+  const [cut, setCut] = useState<boolean | null>(null);
+  const ref = useRef<HTMLImageElement>(null);
+  const img = product.images[index];
+  const onLoad = () => ref.current && setCut(isCutout(ref.current));
+  // si la foto ya estaba en caché, puede cargar antes de que React escuche el evento
+  useEffect(() => {
+    if (ref.current?.complete && ref.current.naturalWidth) onLoad();
+  }, [img]); // eslint-disable-line react-hooks/exhaustive-deps
+  if (!img) {
+    return (
+      <div className="absolute inset-[13%]">
+        <ProductVisual product={product} className={className} />
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={img}
+      alt={product.name}
+      loading="lazy"
+      ref={ref}
+      draggable={false}
+      onLoad={onLoad}
+      className={clsx(
+        "absolute h-full w-full transition-opacity duration-300",
+        cut === false ? "inset-0 object-cover" : "inset-0 object-contain p-[10%] drop-shadow-[0_30px_40px_rgba(0,0,0,.25)]",
+        cut === null && "opacity-0",
+        className,
+      )}
+    />
+  );
+}
 
 /**
  * Muestra la foto del producto. Si todavía no tiene foto, genera

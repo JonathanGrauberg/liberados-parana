@@ -130,6 +130,8 @@ export type Settings = {
   promos: Promo[];
   /** Reseñas cargadas a mano desde el panel */
   reviews?: ManualReview[];
+  /** Calificación general que figura en Google (ej.: 4,6 con 253 reseñas) */
+  reviewsSummary?: { rating: number; total: number };
   /** Producto en "Oferta de la semana". Vacío = el de mayor descuento. */
   weeklyDeal?: { productId: string; endsOn?: string };
   /** Cartel que aparece la primera vez que alguien entra a la web. */

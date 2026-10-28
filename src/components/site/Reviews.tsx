@@ -35,6 +35,7 @@ export function Reviews({ data }: { data: GoogleReviews | null }) {
     .filter((r) => r.rating >= 4 && r.text.trim())
     .sort((a, b) => b.rating - a.rating)
     .slice(0, 12);
+  const summary = data ? { rating: data.rating, total: data.total } : settings.reviewsSummary?.rating ? settings.reviewsSummary : null;
   const loop = list.length >= 3; // carrusel infinito cuando hay varias
   const mapsUrl = data?.mapsUrl || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings.contact.mapsQuery)}`;
 
@@ -50,13 +51,13 @@ export function Reviews({ data }: { data: GoogleReviews | null }) {
           </div>
           <a href={mapsUrl} target="_blank" rel="noopener" className="flex items-center gap-4 rounded-[22px] bg-ink-2 px-5 py-4 ring-1 ring-line transition hover:bg-fg/[.08]">
             <GoogleG className="h-9 w-9" />
-            {data ? (
+            {summary ? (
               <span>
                 <span className="flex items-center gap-2">
-                  <b className="font-display text-3xl font-extrabold">{data.rating.toFixed(1).replace(".", ",")}</b>
-                  <Stars value={data.rating} />
+                  <b className="font-display text-3xl font-extrabold">{summary.rating.toFixed(1).replace(".", ",")}</b>
+                  <Stars value={summary.rating} />
                 </span>
-                <span className="block text-sm text-muted">{data.total} reseñas en Google</span>
+                <span className="block text-sm text-muted">{summary.total} reseñas en Google</span>
               </span>
             ) : (
               <span>

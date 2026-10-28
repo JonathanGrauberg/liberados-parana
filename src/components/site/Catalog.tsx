@@ -10,7 +10,7 @@ import { sortPrice, waLink } from "@/lib/format";
 import type { PublicProduct } from "@/lib/types";
 import { WhatsAppIcon } from "./icons";
 import { Price, priceText } from "./Price";
-import { ProductVisual, Tilt } from "./ProductVisual";
+import { ProductPhotoFill, Tilt } from "./ProductVisual";
 import { SectionHead } from "./SectionHead";
 import { useSite } from "./SiteContext";
 
@@ -185,11 +185,13 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
             className="pointer-events-none absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-100"
             style={{ background: `radial-gradient(55% 50% at 50% 55%, ${p.color}66, transparent 70%)` }}
           />
-          <div className="absolute inset-[13%] transition duration-700 group-hover:scale-[1.07]">
-            <ProductVisual product={p} className={clsx(out && "opacity-40 grayscale", p.images[1] && "transition-opacity duration-500 group-hover:opacity-0")} />
+          <div className="absolute inset-0 transition duration-700 group-hover:scale-[1.05]">
+            <div className={clsx("absolute inset-0", out && "opacity-40 grayscale", p.images[1] && "transition-opacity duration-500 group-hover:opacity-0")}>
+              <ProductPhotoFill product={p} />
+            </div>
             {p.images[1] && (
               <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <ProductVisual product={p} index={1} />
+                <ProductPhotoFill product={p} index={1} />
               </div>
             )}
           </div>

@@ -6,7 +6,7 @@ import { saveSettings } from "@/lib/actions";
 import type { ManualReview, Settings, TradeInPricing } from "@/lib/types";
 import { DEFAULT_PRICING, LOOKS, estimateTradeIn } from "@/lib/tradein";
 import { processImage, uploadBlob } from "@/lib/image-client";
-import { Button, Card, Field, Input, Textarea } from "./ui";
+import { Button, Card, Field, Input, Select, Textarea } from "./ui";
 
 export function SettingsEditor({ settings }: { settings: Settings }) {
   const [s, setS] = useState(settings);
@@ -51,7 +51,7 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
 
       <PricingCard pricing={s.tradeIn.pricing ?? DEFAULT_PRICING} example={s.tradeIn.models.find((m) => m.value > 0)} onChange={(pricing) => edit({ tradeIn: { ...s.tradeIn, pricing } })} />
 
-      <ReviewsCard reviews={s.reviews ?? []} onChange={(reviews) => edit({ reviews })} />
+      <ReviewsCard reviews={s.reviews ?? []} onChange={(reviews) => edit({ reviews })} summary={s.reviewsSummary} onSummary={(reviewsSummary) => edit({ reviewsSummary })} />
 
       <Card className="space-y-4">
         <h2 className="font-display text-xl font-bold">Contacto</h2>
@@ -66,7 +66,7 @@ export function SettingsEditor({ settings }: { settings: Settings }) {
       </Card>
 
       <div className="sticky bottom-20 z-20 lg:bottom-6">
-        <Button variant="brand" className="h-14 w-full text-lg shadow-xl md:w-auto md:px-10" disabled={pending} onClick={() => start(async () => { await saveSettings({ contact: s.contact, tradeIn: s.tradeIn, reviews: (s.reviews ?? []).filter((r) => r.author.trim() && r.text.trim()) }); setSaved(true); })}>
+        <Button variant="brand" className="h-14 w-full text-lg shadow-xl md:w-auto md:px-10" disabled={pending} onClick={() => start(async () => { await saveSettings({ contact: s.contact, tradeIn: s.tradeIn, reviews: (s.reviews ?? []).filter((r) => r.author.trim() && r.text.trim()), reviewsSummary: s.reviewsSummary }); setSaved(true); })}>
           {saved ? <><Check className="h-5 w-5" /> Guardado</> : pending ? "Guardando…" : "Guardar cambios"}
         </Button>
       </div>
@@ -223,7 +223,8 @@ function PricingCard({ pricing, example, onChange }: { pricing: TradeInPricing; 
 }
 
 /** Reseñas que se muestran en el carrusel de la web. Copiarlas tal cual de Google (son reales: no inventar). */
-function ReviewsCard({ reviews, onChange }: { reviews: ManualReview[]; onChange: (r: ManualReview[]) => void }) {
+function ReviewsCard({ reviews, onChange, summary, onSummary }: { reviews: ManualReview[]; onChange: (r: ManualReview[]) => void; summary?: { rating: number; total: number }; onSummary: (s: { rating: number; total: number }) => void }) {
+  const sum = summary ?? { rating: 0, total: 0 };
   const set = (i: number, patch: Partial<ManualReview>) => onChange(reviews.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   return (
     <Card className="space-y-4">
@@ -232,6 +233,19 @@ function ReviewsCard({ reviews, onChange }: { reviews: ManualReview[]; onChange:
         Copiá acá las mejores reseñas que les dejaron en Google (nombre, estrellas y texto, tal cual). Se muestran en un carrusel antes del footer, las de más estrellas primero.
         Si más adelante se conecta la clave de Google, se cargan solas.
       </p>
+      <div className="flex flex-wrap gap-3">
+        <Field label="Calificación en Google" hint="Ej.: 4,6" className="w-44">
+          <Select value={sum.rating ? sum.rating.toFixed(1) : ""} onChange={(e) => onSummary({ ...sum, rating: Number(e.target.value) || 0 })}>
+            <option value="">—</option>
+            {Array.from({ length: 21 }, (_, k) => (5 - k / 10).toFixed(1)).map((v) => (
+              <option key={v} value={v}>{v.replace(".", ",")}</option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Cantidad de reseñas" hint="Ej.: 253" className="w-44">
+          <Input inputMode="numeric" value={sum.total || ""} onChange={(e) => onSummary({ ...sum, total: Number(e.target.value.replace(/\D/g, "")) || 0 })} />
+        </Field>
+      </div>
       <div className="space-y-3">
         {reviews.map((r, i) => (
           <div key={r.id} className="space-y-2 rounded-2xl bg-black/[.03] p-3">
