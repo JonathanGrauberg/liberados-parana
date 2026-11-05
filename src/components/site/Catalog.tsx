@@ -53,7 +53,7 @@ export function Catalog() {
   const counts = { todos: phones.length, usados: phones.filter(isUsed).length, nuevos: phones.filter((p) => !isUsed(p)).length };
 
   return (
-    <section id="catalogo" className="relative scroll-mt-4 overflow-hidden px-5 pb-24 pt-16 md:px-8 md:pb-28 md:pt-24">
+    <section id="catalogo" className="relative scroll-mt-4 overflow-clip px-5 pb-24 pt-16 md:px-8 md:pb-28 md:pt-24">
       <div className="pointer-events-none absolute -left-40 top-10 h-[420px] w-[420px] rounded-full bg-cyan/10 blur-[120px]" />
       <div className="pointer-events-none absolute -right-40 top-1/3 h-[420px] w-[420px] rounded-full bg-pink/10 blur-[120px]" />
       <div className="relative mx-auto max-w-7xl">
@@ -65,29 +65,32 @@ export function Catalog() {
               Elegí tu <b>iPhone.</b>
             </>
           }
-          aside={<p className="text-sm text-muted">Stock actualizado por el local</p>}
-        />
-
-        {/* Buscador y filtros: se pegan debajo del navbar */}
-        <div className="sticky-under-nav glass z-30 -mx-5 mt-8 px-5 pb-3 pt-3 md:-mx-8 md:px-8">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
-            <label className="relative block md:w-80">
+          aside={
+            <label className="ring-spin block w-full md:mb-2 md:w-[420px]">
+              <span className="relative block">
               <span className="sr-only">Buscar</span>
-              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+              <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-fg/80" />
               <input
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
                 placeholder="Buscá “13 Pro”, “256”, “Black”…"
-                className="h-12 w-full rounded-2xl bg-fg/[.06] pl-12 pr-12 text-[16px] text-fg outline-none ring-1 ring-line transition placeholder:text-muted focus:ring-2 focus:ring-cyan/60"
+                className="h-14 w-full rounded-[14px] bg-[#161447] pl-12 pr-12 text-[17px] text-fg outline-none transition placeholder:text-fg/70 focus:bg-[#1c1955]"
               />
               {q && (
                 <button onClick={() => setQ("")} aria-label="Borrar búsqueda" className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-full bg-fg/10 text-fg">
                   <X className="h-4 w-4" />
                 </button>
               )}
+              </span>
             </label>
+          }
+        />
+
+        {/* Filtros: se pegan debajo del navbar (el buscador va al lado del título) */}
+        <div className="sticky-under-nav z-30 mt-8 overflow-hidden rounded-[26px] bg-[#151247]/90 backdrop-blur-xl p-3 shadow-[0_18px_40px_-18px_rgba(0,0,0,.6)] ring-1 ring-line">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
             <LayoutGroup id="cond">
-              <div className="no-scrollbar -mx-5 flex min-w-0 flex-1 gap-2 overflow-x-auto px-5 md:mx-0 md:px-0">
+              <div className="no-scrollbar -mx-3 flex min-w-0 flex-1 gap-2 overflow-x-auto px-3 md:mx-0 md:px-0">
                 {(
                   [
                     ["todos", "Todos"],

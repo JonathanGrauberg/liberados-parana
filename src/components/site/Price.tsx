@@ -9,6 +9,13 @@ import { useSite } from "./SiteContext";
 
 type Size = "sm" | "md" | "lg";
 
+/** "Consultá precio" más discreto que un precio, para no robarse la atención de la tarjeta */
+const ask: Record<Size, string> = {
+  sm: "text-[20px] leading-tight",
+  md: "text-2xl",
+  lg: "text-3xl",
+};
+
 const main: Record<Size, string> = {
   sm: "text-[28px] leading-tight",
   md: "text-3xl md:text-4xl",
@@ -58,7 +65,7 @@ export function Price({ p, size = "sm", className }: { p: PublicProduct; size?: 
   if (p.priceOnRequest) {
     return (
       <div className={className}>
-        <p className={clsx("font-display font-bold tracking-tight", main[size])}>Consultá precio</p>
+        <p className={clsx("font-display font-semibold tracking-tight text-fg/90", ask[size])}>Consultá precio</p>
         <p className={clsx("text-muted", size === "sm" ? "text-[14px]" : "text-xs")}>Te respondemos al toque por WhatsApp</p>
       </div>
     );

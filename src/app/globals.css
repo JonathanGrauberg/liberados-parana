@@ -246,3 +246,36 @@ html.lenis, html.lenis body { height: auto; }
 @media (prefers-reduced-motion: reduce) {
   .marquee { animation: none; }
 }
+
+/* Borde con el degradé de la marca que va girando (buscador del catálogo) */
+@property --spin {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+.ring-spin {
+  position: relative;
+  isolation: isolate;
+  border-radius: 1rem;
+  padding: 2px;
+  background: conic-gradient(from var(--spin), var(--cyan), var(--violet), var(--pink), #fff, var(--cyan));
+  animation: ring-spin 4s linear infinite;
+  box-shadow: 0 0 28px -6px rgba(120, 200, 255, 0.55), 0 0 40px -10px rgba(255, 120, 200, 0.45);
+}
+.ring-spin::before {
+  /* resplandor difuso detrás del borde */
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(14px);
+  opacity: 0.45;
+}
+@keyframes ring-spin {
+  to { --spin: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ring-spin { animation: none; }
+}
