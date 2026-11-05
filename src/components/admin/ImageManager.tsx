@@ -21,7 +21,8 @@ type Props = {
  */
 export function ImageManager({ images, onChange, onColor }: Props) {
   const input = useRef<HTMLInputElement>(null);
-  const [ai, setAi] = useState(true);
+  // apagado por defecto: la IA tarda, se prende solo cuando se quiere
+  const [ai, setAi] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
