@@ -1,9 +1,10 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowLeft, ArrowRight, Camera, Check, Image as ImageIcon, Loader2, Trash2, WandSparkles, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Camera, Check, Crop, Image as ImageIcon, Loader2, Trash2, WandSparkles, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { processImage, removeBg, uploadBlob } from "@/lib/image-client";
+import { CARD_ASPECT, CropDialog, type CropRequest } from "./CropDialog";
 
 type Choice = "cutout" | "original" | "skip";
 type Review = { original: Blob; cutout: Blob; label: string; resolve: (c: Choice) => void };
@@ -29,6 +30,11 @@ export function ImageManager({ images, onChange, onColor }: Props) {
   const ask = (original: Blob, cutout: Blob, label: string) =>
     new Promise<Choice>((resolve) => setReview({ original, cutout, label, resolve }));
 
+  // Ajuste de encuadre (mover y zoom) antes de subir
+  const [crop, setCrop] = useState<CropRequest | null>(null);
+  const askCrop = (src: Blob, label: string, start: CropRequest["start"]) =>
+    new Promise<Blob | null>((resolve) => setCrop({ src, label, start, resolve }));
+
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
     setError(null);
@@ -38,7 +44,7 @@ export function ImageManager({ images, onChange, onColor }: Props) {
       for (const [i, file] of Array.from(files).entries()) {
         const label = files.length > 1 ? ` (${i + 1}/${files.length})` : "";
         let source: Blob = file;
-        let trim = false;
+        let isCutout = false;
         if (ai) {
           setBusy(`Quitando el fondo con IA${label}…`);
           const cutout = await removeBg(file, (pct) => pct < 100 && setBusy(`Preparando la IA (solo la primera vez) ${pct}%`));
@@ -47,12 +53,17 @@ export function ImageManager({ images, onChange, onColor }: Props) {
           setReview(null);
           if (choice === "skip") continue;
           if (choice === "cutout") {
-            source = cutout;
-            trim = true;
+            // se recorta al equipo para que el encuadre arranque centrado
+            source = (await processImage(cutout, { trim: true })).blob;
+            isCutout = true;
           }
         }
+        setBusy(`Ajustá la foto${label}`);
+        const framed = await askCrop(source, label, isCutout ? "pad" : "fill");
+        setCrop(null);
+        if (!framed) continue;
         setBusy(`Optimizando${label}…`);
-        const { blob, color } = await processImage(source, { trim });
+        const { blob, color } = await processImage(framed, { trim: false });
         setBusy(`Subiendo${label}…`);
         added.push(await uploadBlob(blob));
         if (!colorDone) {
@@ -68,7 +79,31 @@ export function ImageManager({ images, onChange, onColor }: Props) {
     } finally {
       setBusy(null);
       setReview(null);
+      setCrop(null);
       if (input.current) input.current.value = "";
+    }
+  }
+
+  /** Volver a encuadrar una foto ya subida: se sube la nueva versión y reemplaza a la anterior. */
+  async function reframe(i: number) {
+    setError(null);
+    try {
+      setBusy("Abriendo la foto…");
+      const src = await (await fetch(images[i])).blob();
+      setBusy("Ajustá la foto");
+      const framed = await askCrop(src, "", "fit");
+      setCrop(null);
+      if (!framed) return;
+      setBusy("Subiendo…");
+      const { blob } = await processImage(framed, { trim: false });
+      const url = await uploadBlob(blob);
+      onChange(images.map((x, j) => (j === i ? url : x)));
+    } catch (e) {
+      console.error(e);
+      setError(e instanceof Error ? e.message : "No se pudo ajustar la foto");
+    } finally {
+      setBusy(null);
+      setCrop(null);
     }
   }
 
@@ -82,12 +117,13 @@ export function ImageManager({ images, onChange, onColor }: Props) {
     <div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {images.map((src, i) => (
-          <div key={src} className="checker group relative aspect-square overflow-hidden rounded-2xl ring-1 ring-black/10">
+          <div key={src} className="checker group relative overflow-hidden rounded-2xl ring-1 ring-black/10" style={{ aspectRatio: `${CARD_ASPECT}` }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={src} alt="" className="h-full w-full object-contain p-2" />
+            <img src={src} alt="" className="h-full w-full object-contain" />
             {i === 0 && <span className="absolute left-2 top-2 rounded-full bg-text-dark px-2.5 py-1 text-xs font-bold text-white">Principal</span>}
             <div className="absolute inset-x-2 bottom-2 flex justify-between gap-1">
               <div className="flex gap-1">
+                <IconBtn label="Ajustar encuadre" onClick={() => !busy && reframe(i)}><Crop /></IconBtn>
                 {i > 0 && <IconBtn label="Mover a la izquierda" onClick={() => move(i, -1)}><ArrowLeft /></IconBtn>}
                 {i < images.length - 1 && <IconBtn label="Mover a la derecha" onClick={() => move(i, 1)}><ArrowRight /></IconBtn>}
               </div>
@@ -101,7 +137,7 @@ export function ImageManager({ images, onChange, onColor }: Props) {
           disabled={!!busy}
           onClick={() => input.current?.click()}
           className={clsx(
-            "flex aspect-square flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-3 text-center transition",
+            "flex min-h-36 flex-col items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-3 text-center transition",
             busy ? "border-violet bg-violet/5" : "border-black/15 hover:border-violet hover:bg-violet/5",
           )}
         >
@@ -121,6 +157,7 @@ export function ImageManager({ images, onChange, onColor }: Props) {
       </div>
 
       {review && <ReviewDialog review={review} />}
+      {crop && <CropDialog req={crop} />}
 
       <input ref={input} type="file" accept="image/*" multiple hidden onChange={(e) => handleFiles(e.target.files)} />
 
