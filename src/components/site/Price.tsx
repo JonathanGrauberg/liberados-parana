@@ -15,7 +15,7 @@ const main: Record<Size, string> = {
   lg: "text-4xl",
 };
 
-/** Número que "cuenta" desde cero hasta el valor cuando aparece en pantalla. */
+/** Número que "cuenta" hasta el valor (se usa en el "pagás" del Plan Canje; los precios de los equipos son fijos). */
 export function CountUp({ value, format, className, duration = 1.2 }: { value: number; format: (n: number) => string; className?: string; duration?: number }) {
   const ref = useRef<HTMLSpanElement>(null);
   const seen = useInView(ref, { once: true, margin: "-10% 0px" });
@@ -74,12 +74,12 @@ export function Price({ p, size = "sm", className }: { p: PublicProduct; size?: 
     <div className={className}>
       {p.comparePrice && p.comparePrice > p.price && <p className="text-xs text-muted line-through">{inCurrency(p.comparePrice, cur)}</p>}
       <p className={clsx("font-display font-bold tracking-tight", main[size])}>
-        <CountUp value={lead} format={fmt} />
+        <span className="tabular-nums">{fmt(lead)}</span>
         {p.cashPrice ? <span className="ml-1.5 align-middle text-[0.5em] font-semibold uppercase tracking-[0.12em] text-accent">efectivo</span> : null}
       </p>
       {ars > 0 && (
         <p className={clsx("text-muted", size === "sm" ? "text-[15px]" : "text-sm")}>
-          ≈ <CountUp value={ars} format={money} duration={1.4} />
+          ≈ {money(ars)}
         </p>
       )}
       {showList && <p className={clsx("text-muted", size === "sm" ? "text-[14px]" : "text-sm")}>Lista {inCurrency(p.price, cur)}</p>}

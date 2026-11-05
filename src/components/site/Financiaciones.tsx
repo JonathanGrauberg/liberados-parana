@@ -9,8 +9,7 @@ import { useSite } from "./SiteContext";
 
 /**
  * "Nuestras financiaciones", debajo del encabezado.
- * Las marcas son versiones simples dibujadas acá; si el local consigue los logos oficiales,
- * se pueden reemplazar por <img src="/pagos/visa.svg" /> etc.
+ * Logos de las tarjetas en /public/pagos (Mastercard se dibuja acá con sus dos círculos).
  */
 const Pill = ({ children, label }: { children: ReactNode; label: string }) => (
   <span title={label} className="grid h-10 min-w-[78px] place-items-center rounded-lg bg-white px-3 shadow-[0_8px_24px_-12px_rgba(0,0,0,.6)]">
@@ -20,7 +19,8 @@ const Pill = ({ children, label }: { children: ReactNode; label: string }) => (
 );
 
 const marks = {
-  visa: <span className="font-display text-[19px] font-black italic tracking-tight text-[#1a1f71]">VISA</span>,
+  // eslint-disable-next-line @next/next/no-img-element
+  visa: <img src="/pagos/visa.png" alt="" className="h-5 w-auto" />,
   master: (
     <svg viewBox="0 0 40 24" className="h-6 w-10" aria-hidden>
       <circle cx="14" cy="12" r="11" fill="#eb001b" />
@@ -28,19 +28,21 @@ const marks = {
       <path d="M20 3.2a11 11 0 0 1 0 17.6 11 11 0 0 1 0-17.6z" fill="#ff5f00" />
     </svg>
   ),
-  naranja: <span className="font-display text-[17px] font-extrabold lowercase tracking-tight text-[#fe5000]">naranja</span>,
-  sidecreer: <span className="font-display text-[16px] font-extrabold tracking-tight text-[#1d1a55]">Sidecreer</span>,
+  // eslint-disable-next-line @next/next/no-img-element
+  naranja: <img src="/pagos/naranja-x.webp" alt="" className="h-5 w-auto" />,
+  // eslint-disable-next-line @next/next/no-img-element
+  sidecreer: <img src="/pagos/sidecreer.png" alt="" className="h-6 w-auto" />,
 };
 
 const items: { icon: typeof CreditCard; title: string; text: string; marks?: { key: keyof typeof marks; label: string }[]; ask: string }[] = [
   {
     icon: CreditCard,
     title: "Tarjetas de crédito",
-    text: "Visa, Mastercard y Naranja.",
+    text: "Visa, Mastercard y Naranja X.",
     marks: [
       { key: "visa", label: "Visa" },
       { key: "master", label: "Mastercard" },
-      { key: "naranja", label: "Naranja" },
+      { key: "naranja", label: "Naranja X" },
     ],
     ask: "¡Hola Liberados! Quiero consultar por la financiación con tarjeta de crédito.",
   },
