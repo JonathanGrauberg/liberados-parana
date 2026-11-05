@@ -233,6 +233,12 @@ html.lenis, html.lenis body { height: auto; }
     var(--page-gradient);
 }
 
+/* Franjas de color plano: cortan el degradé para que la página se lea por partes (pedido del diseñador) */
+.band-navy { background: #0b0d2b; }
+.band-violet { background: #150d32; }
+.band-black { background: #050508; }
+.band-navy, .band-violet { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), inset 0 -1px 0 rgba(255, 255, 255, 0.06); }
+
 /* Carrusel infinito (reseñas): se frena al pasar el mouse */
 @keyframes marquee { to { transform: translateX(-50%); } }
 .marquee { animation: marquee var(--dur, 40s) linear infinite; }

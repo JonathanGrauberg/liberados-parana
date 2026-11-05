@@ -64,7 +64,7 @@ const items: { icon: typeof CreditCard; title: string; text: string; marks?: { k
 export function Financiaciones() {
   const { settings } = useSite();
   return (
-    <section id="financiacion" aria-labelledby="financiacion-title" className="scroll-mt-24 px-5 pt-14 md:px-8 md:pt-20">
+    <section id="financiacion" aria-labelledby="financiacion-title" className="band-navy scroll-mt-24 px-5 py-14 md:px-8 md:py-20">
       <div className="mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 24 }}

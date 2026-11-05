@@ -1,7 +1,6 @@
 "use client";
 
-import { ArrowLeftRight, BadgeCheck, CreditCard, Wrench } from "lucide-react";
-import { motion } from "motion/react";
+import { ArrowLeftRight, BadgeCheck, CreditCard, Sparkles, Wrench } from "lucide-react";
 
 const items = [
   { icon: BadgeCheck, title: "Equipos originales", sub: "Revisados uno por uno" },
@@ -10,28 +9,29 @@ const items = [
   { icon: Wrench, title: "Te lo configuramos", sub: "Pasamos tus datos y WhatsApp" },
 ];
 
-/** Franja de "por qué elegirnos". */
+/** "Por qué elegirnos" como cinta que corre de lado a lado (se frena al pasar el mouse). */
 export function Benefits() {
+  // se repite la lista para que la cinta nunca quede con huecos, y todo dos veces para el loop infinito
+  const run = [...items, ...items, ...items, ...items];
   return (
-    <section className="px-5 pb-6 md:px-8">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px overflow-hidden rounded-[24px] bg-line ring-1 ring-line md:grid-cols-4">
-        {items.map(({ icon: Icon, title, sub }, i) => (
-          <motion.div
-            key={title}
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: i * 0.06 }}
-            className="flex items-center gap-3 bg-ink-2 p-4 md:p-5"
-          >
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-[linear-gradient(135deg,rgba(62,230,232,.18),rgba(240,107,181,.18))] text-accent ring-1 ring-line">
+    <section aria-label="Por qué elegirnos" className="bg-brand group relative overflow-hidden py-4 text-[#07071a] shadow-[0_20px_60px_-20px_rgba(123,127,220,.6)] md:py-5">
+      <ul className="sr-only">
+        {items.map((it) => (
+          <li key={it.title}>{it.title}: {it.sub}</li>
+        ))}
+      </ul>
+      <div aria-hidden className="marquee flex w-max" style={{ ["--dur" as string]: "80s" }}>
+        {[...run, ...run].map(({ icon: Icon, title, sub }, i) => (
+          <div key={i} className="flex shrink-0 items-center gap-3 pr-10 md:pr-14">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-[#07071a]/10">
               <Icon className="h-5 w-5" />
             </span>
             <span className="leading-tight">
-              <span className="block text-[14px] font-semibold">{title}</span>
-              <span className="block text-xs text-muted">{sub}</span>
+              <span className="block font-display text-[16px] font-extrabold md:text-[17px]">{title}</span>
+              <span className="block text-[13px] font-medium opacity-75">{sub}</span>
             </span>
-          </motion.div>
+            <Sparkles className="ml-10 h-4 w-4 shrink-0 opacity-50 md:ml-14" />
+          </div>
         ))}
       </div>
     </section>

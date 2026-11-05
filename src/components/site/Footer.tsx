@@ -15,7 +15,7 @@ export function Footer() {
   const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(contact.mapsQuery)}`;
 
   return (
-    <footer className="relative overflow-hidden px-5 pb-10 pt-10 md:px-8 md:pt-16">
+    <footer className="band-black relative overflow-hidden px-5 pb-10 pt-12 md:px-8 md:pt-16">
       <div className="mx-auto max-w-7xl">
         {/* Agendarnos en WhatsApp para ver las ofertas (estados) */}
         <div className="relative overflow-hidden rounded-[32px] bg-ink-2 p-7 ring-1 ring-line md:p-10">

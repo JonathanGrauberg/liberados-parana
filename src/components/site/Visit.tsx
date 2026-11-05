@@ -29,7 +29,7 @@ export function Visit() {
   const order = [1, 2, 3, 4, 5, 6, 0];
 
   return (
-    <section id="local" className="scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
+    <section id="local" className="band-violet scroll-mt-24 px-5 py-20 md:px-8 md:py-28">
       <div className="mx-auto max-w-7xl">
         <Reveal className="flex flex-wrap items-end justify-between gap-4">
           <div>
