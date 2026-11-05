@@ -1,6 +1,5 @@
 "use client";
 
-import clsx from "clsx";
 import { Check, Maximize, Minimize, Minus, Move, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from "react";
 
@@ -23,7 +22,6 @@ export function CropDialog({ req }: { req: CropRequest }) {
   useEffect(() => () => URL.revokeObjectURL(url), [url]);
 
   const stage = useRef<HTMLDivElement>(null);
-  const frame = useRef<HTMLDivElement>(null);
   const [nat, setNat] = useState<{ w: number; h: number } | null>(null);
   const [box, setBox] = useState({ w: 0, h: 0 }); // tamaño del recuadro en pantalla
   // z = 1 → la foto "llena" el recuadro (cover). x, y = corrimiento del centro, en px de pantalla
@@ -31,10 +29,14 @@ export function CropDialog({ req }: { req: CropRequest }) {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [saving, setSaving] = useState(false);
 
+  // el recuadro se calcula para que entre en el escenario (que se adapta al alto de la pantalla)
   useEffect(() => {
-    const el = frame.current;
+    const el = stage.current;
     if (!el) return;
-    const ro = new ResizeObserver(() => setBox({ w: el.clientWidth, h: el.clientHeight }));
+    const ro = new ResizeObserver(() => {
+      const w = Math.min(el.clientWidth * 0.88, el.clientHeight * 0.84 * CARD_ASPECT);
+      setBox({ w, h: w / CARD_ASPECT });
+    });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
@@ -113,15 +115,15 @@ export function CropDialog({ req }: { req: CropRequest }) {
 
   return (
     <div className="fixed inset-0 z-[85] flex items-end justify-center bg-black/70 backdrop-blur-sm md:items-center md:p-6" role="dialog" aria-modal="true" aria-label="Ajustar la foto">
-      <div className="max-h-[96dvh] w-full max-w-2xl overflow-y-auto rounded-t-[28px] bg-white p-5 md:rounded-[28px] md:p-7">
+      <div className="max-h-[96dvh] w-full max-w-xl overflow-y-auto rounded-t-[28px] bg-white p-4 md:rounded-[28px] md:p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h2 className="font-display text-2xl font-bold">Ajustá la foto{req.label}</h2>
-            <p className="flex items-center gap-1.5 text-sm text-text-mute">
-              <Move className="h-4 w-4" /> Arrastrá para moverla y hacé zoom. Lo de adentro del recuadro es lo que se ve en la web.
+            <h2 className="font-display text-xl font-bold">Ajustá la foto{req.label}</h2>
+            <p className="flex items-center gap-1.5 text-[13px] text-text-mute">
+              <Move className="h-4 w-4 shrink-0" /> Arrastrá y hacé zoom. Lo de adentro del recuadro es lo que se ve.
             </p>
           </div>
-          <button type="button" onClick={() => req.resolve(null)} aria-label="Descartar esta foto" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-black/5 hover:bg-black/10">
+          <button type="button" onClick={() => req.resolve(null)} aria-label="Descartar esta foto" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/5 hover:bg-black/10">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -134,8 +136,7 @@ export function CropDialog({ req }: { req: CropRequest }) {
           onPointerUp={onUp}
           onPointerCancel={onUp}
           onWheel={onWheel}
-          className={clsx("checker relative mt-5 grid touch-none select-none place-items-center overflow-hidden rounded-2xl", "cursor-grab active:cursor-grabbing")}
-          style={{ aspectRatio: "1 / 1" }}
+          className="checker relative mt-3 grid h-[min(48dvh,360px)] cursor-grab touch-none select-none place-items-center overflow-hidden rounded-2xl active:cursor-grabbing"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -148,9 +149,8 @@ export function CropDialog({ req }: { req: CropRequest }) {
           />
           {/* recuadro: afuera queda oscurecido (translúcido), adentro la línea punteada */}
           <div
-            ref={frame}
-            className="pointer-events-none relative w-[86%] rounded-[18px] outline-2 outline-offset-0 outline-white outline-dashed shadow-[0_0_0_9999px_rgba(15,12,40,.62)]"
-            style={{ aspectRatio: `${CARD_ASPECT}` }}
+            className="pointer-events-none relative rounded-[18px] outline-2 outline-offset-0 outline-white outline-dashed shadow-[0_0_0_9999px_rgba(15,12,40,.62)]"
+            style={{ width: box.w || undefined, height: box.h || undefined }}
           >
             <span className="absolute inset-x-1/3 inset-y-0 border-x border-white/25" />
             <span className="absolute inset-x-0 inset-y-1/3 border-y border-white/25" />
@@ -158,8 +158,8 @@ export function CropDialog({ req }: { req: CropRequest }) {
         </div>
 
         {/* zoom */}
-        <div className="mt-4 flex items-center gap-3">
-          <button type="button" aria-label="Alejar" onClick={() => setZ((v) => clampZ(v / 1.15))} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-black/5 hover:bg-black/10">
+        <div className="mt-3 flex items-center gap-2">
+          <button type="button" aria-label="Alejar" onClick={() => setZ((v) => clampZ(v / 1.15))} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/5 hover:bg-black/10">
             <Minus className="h-5 w-5" />
           </button>
           <input
@@ -172,27 +172,26 @@ export function CropDialog({ req }: { req: CropRequest }) {
             onChange={(e) => setZ(clampZ(Math.exp(Number(e.target.value))))}
             className="h-2 flex-1 cursor-pointer accent-violet"
           />
-          <button type="button" aria-label="Acercar" onClick={() => setZ((v) => clampZ(v * 1.15))} className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-black/5 hover:bg-black/10">
+          <button type="button" aria-label="Acercar" onClick={() => setZ((v) => clampZ(v * 1.15))} className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-black/5 hover:bg-black/10">
             <Plus className="h-5 w-5" />
           </button>
         </div>
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
-          <button type="button" onClick={() => { setZ(fitZ); setPos({ x: 0, y: 0 }); }} className="flex items-center gap-1.5 rounded-full bg-black/5 px-4 py-2 text-sm font-semibold hover:bg-black/10">
-            <Minimize className="h-4 w-4" /> Que entre entera
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => { setZ(fitZ); setPos({ x: 0, y: 0 }); }} className="flex h-10 items-center gap-1.5 rounded-full bg-black/5 px-3 text-[13px] font-semibold hover:bg-black/10">
+            <Minimize className="h-4 w-4" /> Entera
           </button>
-          <button type="button" onClick={() => { setZ(1); setPos({ x: 0, y: 0 }); }} className="flex items-center gap-1.5 rounded-full bg-black/5 px-4 py-2 text-sm font-semibold hover:bg-black/10">
-            <Maximize className="h-4 w-4" /> Llenar el recuadro
+          <button type="button" onClick={() => { setZ(1); setPos({ x: 0, y: 0 }); }} className="flex h-10 items-center gap-1.5 rounded-full bg-black/5 px-3 text-[13px] font-semibold hover:bg-black/10">
+            <Maximize className="h-4 w-4" /> Llenar
+          </button>
+          <button
+            type="button"
+            disabled={!nat || saving}
+            onClick={save}
+            className="bg-brand ml-auto flex h-12 min-w-40 flex-1 items-center justify-center gap-2 rounded-2xl text-[15px] font-bold text-ink hover:brightness-105 disabled:opacity-50 sm:flex-none sm:px-6"
+          >
+            <Check className="h-5 w-5" /> {saving ? "Guardando…" : "Listo, usar así"}
           </button>
         </div>
-
-        <button
-          type="button"
-          disabled={!nat || saving}
-          onClick={save}
-          className="bg-brand mt-6 flex h-14 w-full items-center justify-center gap-2 rounded-2xl text-[16px] font-bold text-ink hover:brightness-105 disabled:opacity-50"
-        >
-          <Check className="h-5 w-5" /> {saving ? "Guardando…" : "Listo, usar así"}
-        </button>
       </div>
     </div>
   );
