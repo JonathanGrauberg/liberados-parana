@@ -1,21 +1,23 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowLeftRight, Search, X } from "lucide-react";
+import { ArrowLeftRight, ChevronDown, Search, X } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useMemo, useState } from "react";
-import { conditions } from "@/brand.config";
 import { discount } from "@/lib/deal";
 import { sortPrice, waLink } from "@/lib/format";
 import type { PublicProduct } from "@/lib/types";
 import { WhatsAppIcon } from "./icons";
 import { Price, priceText } from "./Price";
-import { ProductPhotoFill, Tilt } from "./ProductVisual";
+import { PhotoSlider, Tilt } from "./ProductVisual";
 import { SectionHead } from "./SectionHead";
 import { useSite } from "./SiteContext";
 
 type Cond = "todos" | "usados" | "nuevos";
 type Sort = "destacados" | "menor" | "mayor";
+
+/** Cuántos equipos se ven por grupo antes de "Ver todos". */
+const PREVIEW = 4;
 
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const isUsed = (p: PublicProduct) => p.condition === "usado" || p.condition === "reacondicionado";
@@ -30,6 +32,8 @@ export function Catalog() {
   const { products, settings, openProduct, query: q, setQuery: setQ } = useSite();
   const [cond, setCond] = useState<Cond>("todos");
   const [sort, setSort] = useState<Sort>("destacados");
+  // en la vista agrupada se muestran 4 por grupo y un "Ver todos"
+  const [more, setMore] = useState<Record<string, boolean>>({});
   const phones = useMemo(() => products.filter((p) => p.category === "celulares"), [products]);
 
   const list = useMemo(() => {
@@ -87,10 +91,10 @@ export function Catalog() {
         />
 
         {/* Filtros: se pegan debajo del navbar (el buscador va al lado del título) */}
-        <div className="sticky-under-nav z-30 mt-8 overflow-hidden rounded-[26px] bg-[#151247]/90 backdrop-blur-xl p-3 shadow-[0_18px_40px_-18px_rgba(0,0,0,.6)] ring-1 ring-line">
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+        <div className="sticky-under-nav z-30 mt-8 overflow-hidden rounded-[26px] bg-[#151247]/90 p-2 backdrop-blur-xl md:p-3 shadow-[0_18px_40px_-18px_rgba(0,0,0,.6)] ring-1 ring-line">
+          <div className="flex items-center gap-2 md:gap-4">
             <LayoutGroup id="cond">
-              <div className="no-scrollbar -mx-3 flex min-w-0 flex-1 gap-2 overflow-x-auto px-3 md:mx-0 md:px-0">
+              <div className="no-scrollbar -ml-3 flex min-w-0 flex-1 gap-2 overflow-x-auto pl-3 md:mx-0 md:px-0">
                 {(
                   [
                     ["todos", "Todos"],
@@ -107,7 +111,7 @@ export function Catalog() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as Sort)}
-              className="h-11 w-fit rounded-full bg-fg/[.06] px-4 text-[15px] font-medium text-fg outline-none ring-1 ring-line [&>option]:text-text-dark"
+              className="h-11 w-fit shrink-0 rounded-full bg-fg/[.06] px-3 text-[14px] font-medium md:px-4 md:text-[15px] text-fg outline-none ring-1 ring-line [&>option]:text-text-dark"
               aria-label="Ordenar"
             >
               <option value="destacados">Destacados</option>
@@ -121,13 +125,29 @@ export function Catalog() {
           GROUPS.map((g) => {
             const items = list.filter((p) => (g.id === "usados" ? isUsed(p) : !isUsed(p)));
             if (!items.length) return null;
+            const open = more[g.id];
             return (
-              <div key={g.id} className="mt-12 first:mt-10">
+              <div key={g.id} id={`grupo-${g.id}`} className="mt-12 scroll-mt-40 first:mt-10">
                 <div className="mb-5 flex flex-wrap items-end justify-between gap-2">
                   <h3 className="title-lux text-2xl md:text-3xl">{g.title}</h3>
                   <p className="text-sm text-muted">{g.sub}</p>
                 </div>
-                <Grid items={items} onOpen={openProduct} />
+                <Grid items={open ? items : items.slice(0, PREVIEW)} onOpen={openProduct} />
+                {items.length > PREVIEW && (
+                  <div className="mt-6 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMore((m) => ({ ...m, [g.id]: !open }));
+                        if (open) document.getElementById(`grupo-${g.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      }}
+                      className="ring-brand flex h-12 items-center gap-2 rounded-full px-7 text-[16px] font-semibold text-fg transition hover:bg-fg/[.06]"
+                    >
+                      {open ? "Ver menos" : `Ver todos los ${g.id === "usados" ? "usados" : "nuevos"} (${items.length})`}
+                      <ChevronDown className={clsx("h-5 w-5 transition-transform", open && "rotate-180")} />
+                    </button>
+                  </div>
+                )}
               </div>
             );
           })
@@ -179,31 +199,20 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
 
   return (
     <article className="group relative flex h-full flex-col rounded-[24px] bg-ink-2 p-2 ring-1 ring-line transition duration-500 hover:-translate-y-1 hover:shadow-[0_30px_60px_-24px_rgba(0,0,0,.7)] hover:ring-fg/20">
-      {/* foto y datos: abren la ficha */}
+      {/* fotos: se deslizan para los costados; un toque abre la ficha */}
+      <Tilt className="relative aspect-[4/3.4] w-full overflow-hidden rounded-[18px]" max={4}>
+        {/* degradé con el color del equipo */}
+        <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }} />
+        <PhotoSlider product={p} onOpen={onOpen} dim={out} />
+        {out && (
+          <div className="pointer-events-none absolute left-2.5 top-2.5">
+            <Badge tone="gray">Sin stock</Badge>
+          </div>
+        )}
+        {off > 0 && <span className="pointer-events-none absolute right-2.5 top-2.5 rounded-full bg-pink px-2.5 py-1 text-[13px] font-extrabold text-ink">−{off}%</span>}
+      </Tilt>
+      {/* datos: abren la ficha */}
       <button onClick={onOpen} className="flex flex-1 flex-col text-left" aria-label={`Ver detalles del ${p.name} ${p.storage ?? ""}`}>
-        <Tilt className="relative aspect-[4/3.4] w-full overflow-hidden rounded-[18px]" max={7}>
-          {/* degradé con el color del equipo */}
-          <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }} />
-          <div
-            className="pointer-events-none absolute inset-0 opacity-0 transition duration-700 group-hover:opacity-100"
-            style={{ background: `radial-gradient(55% 50% at 50% 55%, ${p.color}66, transparent 70%)` }}
-          />
-          <div className="absolute inset-0 transition duration-700 group-hover:scale-[1.05]">
-            <div className={clsx("absolute inset-0", out && "opacity-40 grayscale", p.images[1] && "transition-opacity duration-500 group-hover:opacity-0")}>
-              <ProductPhotoFill product={p} />
-            </div>
-            {p.images[1] && (
-              <div className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                <ProductPhotoFill product={p} index={1} />
-              </div>
-            )}
-          </div>
-          <div className="absolute left-2.5 top-2.5 flex max-w-[75%] flex-wrap gap-1">
-            <Badge tone={conditions[p.condition].tone}>{conditions[p.condition].label}</Badge>
-            {out && <Badge tone="gray">Sin stock</Badge>}
-          </div>
-          {off > 0 && <span className="absolute right-2.5 top-2.5 rounded-full bg-pink px-2.5 py-1 text-[13px] font-extrabold text-ink">−{off}%</span>}
-        </Tilt>
         <div className="flex flex-1 flex-col px-2.5 pb-1 pt-3">
           <h3 className="font-display text-[22px] font-bold leading-tight tracking-tight">
             {p.name} <span className="font-medium text-muted">{p.storage}</span>

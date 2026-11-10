@@ -4,15 +4,32 @@ import { ArrowLeftRight } from "lucide-react";
 import { useState } from "react";
 import { WhatsAppIcon } from "./icons";
 import { Reveal } from "./Reveal";
-import { DeviceQuestions, LiveResult, NameField, PhonePicker, Q, StateQuestions, useTradeInForm } from "./tradein-form";
+import { autoAdvance, DeviceQuestions, LiveResult, NameField, PhonePicker, Q, StateQuestions, useTradeInForm } from "./tradein-form";
 
 /** Sección del Plan Canje: todas las preguntas a la vista y el "pagás" en vivo al costado. */
 export function PlanCanje() {
   const [targetId, setTargetId] = useState<string | null>(null);
   const f = useTradeInForm(targetId, setTargetId);
+  // autoscroll: al responder, la pregunta siguiente queda centrada en la pantalla (aunque ya se vea)
+  const scrollTo = (el: HTMLElement) => {
+    const r = el.getBoundingClientRect();
+    const top = 110; // barra del dólar + menú
+    const bottom = window.innerWidth >= 1024 ? 24 : 190; // en celular abajo está pegado el resultado
+    const room = window.innerHeight - top - bottom;
+    // si la pregunta es más alta que el espacio, se alinea arriba; si no, al centro
+    const y = window.scrollY + r.top - top - (r.height < room ? (room - r.height) / 2 : 0);
+    const lenis = (window as unknown as { __lenis?: { scrollTo(t: number): void } }).__lenis;
+    if (lenis) lenis.scrollTo(y);
+    else window.scrollTo({ top: y, behavior: "smooth" });
+  };
+  const goStep2 = () =>
+    setTimeout(() => {
+      const el = document.querySelector<HTMLElement>("#canje-paso-2 [data-q]");
+      if (el) scrollTo(el);
+    }, 250);
 
   const result = (
-    <div className="ring-brand relative overflow-hidden rounded-[28px] bg-ink-2 p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,.6)] backdrop-blur-xl md:p-7">
+    <div className="ring-brand relative overflow-hidden rounded-[28px] bg-[#0b0d2b]/90 p-6 shadow-[0_30px_80px_-30px_rgba(0,0,0,.6)] backdrop-blur-xl md:p-7">
       <div className="pointer-events-none absolute -left-16 -top-20 h-56 w-56 rounded-full bg-cyan/25 blur-[70px]" />
       <div className="pointer-events-none absolute -bottom-20 -right-10 h-56 w-56 rounded-full bg-pink/30 blur-[70px]" />
       <LiveResult f={f} big />
@@ -46,16 +63,18 @@ export function PlanCanje() {
         </div>
 
         {/* derecha: preguntas */}
-        <div className="space-y-9">
+        <div className="space-y-9" onClick={autoAdvance(scrollTo)}>
           <Q n={1} title="¿Cuál te querés llevar?">
-            <PhonePicker f={f} grid />
+            <PhonePicker f={f} grid onPicked={goStep2} />
           </Q>
-          <DeviceQuestions f={f} grid numbered={2} />
+          <div id="canje-paso-2" className="scroll-mt-36 space-y-9">
+            <DeviceQuestions f={f} grid numbered={2} />
+          </div>
           <StateQuestions f={f} grid numbered={5} />
           <NameField f={f} n={8} />
           {/* en celular el resultado queda pegado abajo mientras se completa */}
           <div className="sticky bottom-24 z-10 lg:hidden">
-            <div className="ring-brand relative flex items-end gap-3 overflow-hidden rounded-3xl bg-[#1d1a55]/85 p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,.7)] backdrop-blur-xl">
+            <div className="ring-brand relative flex items-end gap-3 overflow-hidden rounded-3xl bg-[#0b0d2b]/90 p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,.7)] backdrop-blur-xl">
               <div className="min-w-0 flex-1">
                 <LiveResult f={f} />
               </div>

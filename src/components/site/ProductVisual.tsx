@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, useMotionTemplate, useMotionValue, useSpring } from "motion/react";
 import { useEffect, useRef, useState, type PointerEvent } from "react";
 import type { PublicProduct } from "@/lib/types";
@@ -147,6 +148,131 @@ export function Tilt({ children, className, max = 10 }: { children: React.ReactN
         {children}
         <motion.div style={{ background: shine }} className="pointer-events-none absolute inset-0 rounded-[inherit] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       </motion.div>
+    </div>
+  );
+}
+
+/**
+ * Fotos del producto en un carrusel: se desliza con el dedo o el trackpad, y en PC con flechas.
+ * `index`/`onIndex` opcionales para manejarlo desde afuera (miniaturas de la ficha).
+ */
+export function PhotoSlider({
+  product,
+  index,
+  onIndex,
+  onOpen,
+  dim,
+  className,
+}: {
+  product: PublicProduct;
+  index?: number;
+  onIndex?: (i: number) => void;
+  onOpen?: () => void;
+  dim?: boolean;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [cur, setCur] = useState(0);
+  const count = Math.max(1, product.images.length);
+  const go = (i: number, smooth = true) => {
+    const el = ref.current;
+    if (!el) return;
+    const n = (i + count) % count;
+    el.scrollTo({ left: n * el.clientWidth, behavior: smooth ? "smooth" : "auto" });
+  };
+  // desde afuera (miniaturas)
+  useEffect(() => {
+    if (index != null && index !== cur) go(index);
+  }, [index]); // eslint-disable-line react-hooks/exhaustive-deps
+  const onScroll = () => {
+    const el = ref.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== cur) {
+      setCur(i);
+      onIndex?.(i);
+    }
+  };
+
+  // en PC también se puede arrastrar con el mouse
+  const drag = useRef<{ x: number; left: number; moved: boolean } | null>(null);
+  const onDown = (e: PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType !== "mouse" || count < 2 || !ref.current) return;
+    drag.current = { x: e.clientX, left: ref.current.scrollLeft, moved: false };
+  };
+  const onMoveDrag = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    const el = ref.current;
+    if (!d || !el) return;
+    const dx = e.clientX - d.x;
+    if (Math.abs(dx) > 5 && !d.moved) {
+      d.moved = true;
+      el.style.scrollSnapType = "none";
+      try {
+        el.setPointerCapture(e.pointerId);
+      } catch {}
+    }
+    if (d.moved) el.scrollLeft = d.left - dx;
+  };
+  const onUpDrag = (e: PointerEvent<HTMLDivElement>) => {
+    const d = drag.current;
+    const el = ref.current;
+    drag.current = null;
+    if (!d || !el || !d.moved) return;
+    const dx = e.clientX - d.x;
+    const base = Math.round(d.left / el.clientWidth);
+    const target = Math.abs(dx) > el.clientWidth * 0.15 ? base + (dx < 0 ? 1 : -1) : base;
+    el.style.scrollSnapType = "";
+    go(Math.max(0, Math.min(count - 1, target)));
+    // que el arrastre no cuente como click para abrir la ficha
+    const stop = (ev: Event) => ev.stopPropagation();
+    el.addEventListener("click", stop, { capture: true, once: true });
+    setTimeout(() => el.removeEventListener("click", stop, { capture: true }), 50);
+  };
+
+  return (
+    <div className={clsx("group/slider absolute inset-0", className)}>
+      <div
+        ref={ref}
+        onScroll={onScroll}
+        onClick={onOpen}
+        onPointerDown={onDown}
+        onPointerMove={onMoveDrag}
+        onPointerUp={onUpDrag}
+        onPointerCancel={onUpDrag}
+        className={clsx("no-scrollbar absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain", onOpen && "cursor-pointer", dim && "opacity-40 grayscale")}
+      >
+        {(product.images.length ? product.images : [""]).map((src, i) => (
+          <div key={src + i} className="relative h-full w-full shrink-0 snap-center snap-always">
+            <ProductPhotoFill product={product} index={i} />
+          </div>
+        ))}
+      </div>
+      {count > 1 && (
+        <>
+          <button
+            type="button"
+            aria-label="Foto anterior"
+            onClick={(e) => { e.stopPropagation(); go(cur - 1); }}
+            className="absolute left-2 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white opacity-0 backdrop-blur transition hover:bg-black/65 group-hover/slider:opacity-100 md:grid"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            aria-label="Foto siguiente"
+            onClick={(e) => { e.stopPropagation(); go(cur + 1); }}
+            className="absolute right-2 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-black/45 text-white opacity-0 backdrop-blur transition hover:bg-black/65 group-hover/slider:opacity-100 md:grid"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+          <div className="pointer-events-none absolute inset-x-0 bottom-2.5 z-10 flex justify-center gap-1.5">
+            {product.images.map((_, i) => (
+              <span key={i} className={clsx("h-1.5 rounded-full shadow-[0_0_6px_rgba(0,0,0,.5)] transition-all", i === cur ? "w-5 bg-white" : "w-1.5 bg-white/55")} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

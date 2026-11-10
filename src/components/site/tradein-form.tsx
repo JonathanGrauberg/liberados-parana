@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { Check } from "lucide-react";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import { inCurrency, money, toArs, usd, waLink } from "@/lib/format";
 import { DEFAULT_PRICING, LOOKS, estimateTradeIn } from "@/lib/tradein";
 import { CountUp } from "./Price";
@@ -79,27 +79,43 @@ export function useTradeInForm(targetId: string | null, setTargetId: (id: string
 
 export type TradeInForm = ReturnType<typeof useTradeInForm>;
 
+/**
+ * Autoscroll: al tocar una opción, se pasa sola a la pregunta siguiente.
+ * Se pone como onClick del contenedor de las preguntas; `scrollTo` decide cómo bajar (página o panel).
+ * Las opciones con `stay` (ej.: "Tiene alguna falla", que abre un texto) no avanzan.
+ */
+export function autoAdvance(scrollTo: (el: HTMLElement) => void) {
+  return (e: MouseEvent<HTMLElement>) => {
+    const btn = (e.target as HTMLElement).closest<HTMLElement>("button[aria-pressed]");
+    if (!btn || btn.dataset.stay != null) return;
+    const qs = [...e.currentTarget.querySelectorAll<HTMLElement>("[data-q]")];
+    const next = qs[qs.indexOf(btn.closest<HTMLElement>("[data-q]")!) + 1];
+    if (next) setTimeout(() => scrollTo(next), 280);
+  };
+}
+
 export function Q({ n, title, hint, children }: { n?: number; title: string; hint?: string; children: ReactNode }) {
   return (
-    <div>
-      <h3 className="flex items-center gap-2.5 font-display text-xl font-bold tracking-tight">
-        {n != null && <span className="bg-brand grid h-7 w-7 shrink-0 place-items-center rounded-full text-sm font-extrabold text-[#07071a]">{n}</span>}
+    <div data-q>
+      <h3 className="flex items-center gap-2.5 font-display text-[23px] font-bold tracking-tight md:text-2xl">
+        {n != null && <span className="bg-brand grid h-8 w-8 shrink-0 place-items-center rounded-full text-[15px] font-extrabold text-[#07071a]">{n}</span>}
         {title}
       </h3>
-      {hint && <p className="mt-1 text-sm text-muted">{hint}</p>}
+      {hint && <p className="mt-1 text-[15px] text-muted">{hint}</p>}
       <div className="mt-3">{children}</div>
     </div>
   );
 }
 
-export function Option({ active, onClick, children, className }: { active: boolean; onClick: () => void; children: ReactNode; className?: string }) {
+export function Option({ active, onClick, children, className, stay }: { active: boolean; onClick: () => void; children: ReactNode; className?: string; stay?: boolean }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={active}
+      data-stay={stay || undefined}
       className={clsx(
-        "min-h-12 rounded-2xl px-4 py-3 text-left text-[15px] font-medium transition active:scale-[.98]",
+        "min-h-12 rounded-2xl px-4 py-3 text-left text-[17px] font-medium transition active:scale-[.98]",
         active ? "bg-fg text-ink shadow-[0_10px_30px_-8px_rgba(62,230,232,.45)]" : "bg-fg/[.06] text-fg ring-1 ring-line hover:bg-fg/[.1]",
         className,
       )}
@@ -109,15 +125,16 @@ export function Option({ active, onClick, children, className }: { active: boole
   );
 }
 
-const inputCls = "h-12 w-full rounded-2xl bg-fg/[.06] px-4 text-[16px] text-fg outline-none ring-1 ring-line placeholder:text-muted focus:ring-2 focus:ring-cyan/60";
+const inputCls = "h-12 w-full rounded-2xl bg-fg/[.06] px-4 text-[17px] text-fg outline-none ring-1 ring-line placeholder:text-muted focus:ring-2 focus:ring-cyan/60";
 
 /** Elegir el equipo que se quiere llevar (usados / nuevos). */
-export function PhonePicker({ f, grid }: { f: TradeInForm; grid?: boolean }) {
+/** `onPicked`: se llama al elegir un equipo (para pasar solo al paso 2). */
+export function PhonePicker({ f, grid, onPicked }: { f: TradeInForm; grid?: boolean; onPicked?: () => void }) {
   return (
     <>
       <div className="mb-3 flex gap-6 border-b border-line">
         {(["usados", "nuevos"] as const).map((t) => (
-          <button key={t} type="button" onClick={() => f.setTab(t)} className={clsx("relative pb-3 text-[15px] font-semibold", f.tab === t ? "text-fg" : "text-muted")}>
+          <button key={t} type="button" onClick={() => f.setTab(t)} className={clsx("relative pb-3 text-[17px] font-semibold", f.tab === t ? "text-fg" : "text-muted")}>
             {t === "usados" ? "Usados seleccionados" : "Nuevos en caja"}
             {f.tab === t && <span className="absolute inset-x-0 -bottom-px h-[2px] bg-brand" />}
           </button>
@@ -130,15 +147,19 @@ export function PhonePicker({ f, grid }: { f: TradeInForm; grid?: boolean }) {
             <button
               key={p.id}
               type="button"
-              onClick={() => f.setTargetId(f.targetId === p.id ? null : p.id)}
+              onClick={() => {
+                const pick = f.targetId !== p.id;
+                f.setTargetId(pick ? p.id : null);
+                if (pick) onPicked?.();
+              }}
               className={clsx("flex items-center gap-3 rounded-2xl p-2 pr-3 text-left ring-1 transition", f.targetId === p.id ? "bg-fg/[.1] ring-cyan/70" : "bg-fg/[.03] ring-line hover:bg-fg/[.06]")}
             >
-              <span className="h-12 w-12 shrink-0">
+              <span className="h-14 w-14 shrink-0">
                 <ProductVisual product={p} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block text-[15px]">{p.name} <span className="text-muted">{p.storage}</span></span>
-                <span className="block text-xs text-muted">{[p.colorName, p.battery ? `Batería ${p.battery}%` : null].filter(Boolean).join(" · ")}</span>
+                <span className="block text-[17px] font-medium">{p.name} <span className="text-muted">{p.storage}</span></span>
+                <span className="block text-[14px] text-muted">{[p.colorName, p.battery ? `Batería ${p.battery}%` : null].filter(Boolean).join(" · ")}</span>
               </span>
               {f.targetId === p.id && <Check className="h-4 w-4 shrink-0 text-accent" />}
             </button>
@@ -157,7 +178,7 @@ export function DeviceQuestions({ f, grid, numbered }: { f: TradeInForm; grid?: 
         {grid ? (
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
             {f.models.map((m) => (
-              <Option key={m} active={f.model === m} onClick={() => f.setModel(m)} className="!min-h-11 !py-2.5 text-[14px]">
+              <Option key={m} active={f.model === m} onClick={() => f.setModel(m)} className="!min-h-11 !py-2.5 !text-[16px]">
                 {m}
               </Option>
             ))}
@@ -198,7 +219,7 @@ export function StateQuestions({ f, grid, numbered }: { f: TradeInForm; grid?: b
           {LOOKS.map((l) => (
             <Option key={l.id} active={f.look === l.id} onClick={() => f.setLook(l.id)}>
               <span className="block">{l.id}</span>
-              <span className="block text-xs opacity-60">{l.hint}</span>
+              <span className="block text-[14px] opacity-65">{l.hint}</span>
             </Option>
           ))}
         </div>
@@ -206,7 +227,7 @@ export function StateQuestions({ f, grid, numbered }: { f: TradeInForm; grid?: b
       <Q n={n(1)} title="¿Funciona todo bien?">
         <div className="grid grid-cols-2 gap-2">
           <Option active={f.works === "si"} onClick={() => f.setWorks("si")}>Sí, todo funciona</Option>
-          <Option active={f.works === "no"} onClick={() => f.setWorks("no")}>Tiene alguna falla</Option>
+          <Option active={f.works === "no"} onClick={() => f.setWorks("no")} stay>Tiene alguna falla</Option>
         </div>
         {f.works === "no" && (
           <textarea
@@ -214,7 +235,7 @@ export function StateQuestions({ f, grid, numbered }: { f: TradeInForm; grid?: b
             onChange={(e) => f.setFault(e.target.value.slice(0, 140))}
             rows={2}
             placeholder="¿Qué falla? (Face ID, cámara, parlante…)"
-            className="mt-2 w-full rounded-2xl bg-fg/[.06] p-3 text-[15px] text-fg outline-none ring-1 ring-line placeholder:text-muted focus:ring-2 focus:ring-cyan/60"
+            className="mt-2 w-full rounded-2xl bg-fg/[.06] p-3 text-[17px] text-fg outline-none ring-1 ring-line placeholder:text-muted focus:ring-2 focus:ring-cyan/60"
           />
         )}
       </Q>
@@ -242,13 +263,13 @@ export function LiveResult({ f, big }: { f: TradeInForm; big?: boolean }) {
   const { target, diff, diffCur, rate, model } = f;
   if (!target)
     return (
-      <p className={clsx("relative text-muted", big ? "text-lg" : "text-sm")}>
+      <p className={clsx("relative text-fg/80", big ? "text-xl" : "text-[16px]")}>
         Elegí el iPhone que te querés llevar y mirá en vivo cuánto pagás con tu usado.
       </p>
     );
   return (
     <div className="relative">
-      <p className={clsx("text-fg/80", big ? "text-lg" : "text-sm")}>
+      <p className={clsx("text-fg/85", big ? "text-xl" : "text-[16px]")}>
         Para llevarte el <b className="text-fg">{target.name}{target.storage ? " " + target.storage : ""}</b> pagás:
       </p>
       {diff !== null ? (
@@ -260,7 +281,7 @@ export function LiveResult({ f, big }: { f: TradeInForm; big?: boolean }) {
             className={clsx("font-display text-white font-extrabold leading-tight tracking-tight", big ? "text-[clamp(48px,6vw,76px)]" : "text-[34px] md:text-[42px]")}
           />
           {diffCur === "USD" && rate > 0 && (
-            <span className={clsx("text-white", big ? "text-base" : "text-sm")}>
+            <span className={clsx("text-white", big ? "text-lg" : "text-[15px]")}>
               ≈ <CountUp value={toArs(diff, "USD", rate)} format={money} duration={1.1} /> efectivo
             </span>
           )}
@@ -268,7 +289,7 @@ export function LiveResult({ f, big }: { f: TradeInForm; big?: boolean }) {
       ) : (
         <p className="mt-1 font-display text-xl font-bold">{target.priceOnRequest ? "Consultá el precio por WhatsApp" : "Te lo cotizamos por WhatsApp"}</p>
       )}
-      <p className="text-xs text-white/85">{model ? "Estimado. Lo confirmamos al ver tu equipo." : "Elegí tu iPhone y mirá cómo baja."}</p>
+      <p className="text-[13px] text-white/85">{model ? "Estimado. Lo confirmamos al ver tu equipo." : "Elegí tu iPhone y mirá cómo baja."}</p>
     </div>
   );
 }

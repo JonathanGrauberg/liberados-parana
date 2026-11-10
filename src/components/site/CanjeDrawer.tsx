@@ -3,10 +3,10 @@
 import clsx from "clsx";
 import { ArrowLeft, ArrowLeftRight, ArrowRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { WhatsAppIcon } from "./icons";
 import { useSite } from "./SiteContext";
-import { DeviceQuestions, LiveResult, NameField, PhonePicker, Q, StateQuestions, useTradeInForm } from "./tradein-form";
+import { autoAdvance, DeviceQuestions, LiveResult, NameField, PhonePicker, Q, StateQuestions, useTradeInForm } from "./tradein-form";
 
 const ease = [0.16, 1, 0.3, 1] as const;
 const STEPS = ["Tu próximo iPhone", "Tu iPhone", "Estado"];
@@ -55,6 +55,7 @@ export function CanjeDrawer() {
   const desktop = useIsDesktop();
   const f = useTradeInForm(tradeTarget, setTradeTarget);
   const [step, setStep] = useState(0);
+  const body = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!canjeOpen) return;
@@ -88,7 +89,7 @@ export function CanjeDrawer() {
             animate={panel.animate}
             exit={panel.exit}
             transition={{ duration: 0.6, ease }}
-            className={clsx("absolute flex flex-col overflow-hidden border-line bg-ink text-fg", panel.className)}
+            className={clsx("absolute flex flex-col overflow-hidden border-line bg-[#0b0d2b] text-fg", panel.className)}
           >
             <div aria-hidden className="h-1 shrink-0 bg-brand" />
             {/* encabezado */}
@@ -96,8 +97,8 @@ export function CanjeDrawer() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="eyebrow">Plan Canje</p>
-                  <h2 className="title-lux mt-2 text-3xl">Entregá tu <b>iPhone</b></h2>
-                  <p className="mt-1 text-sm text-muted">Elegí el que te querés llevar y mirá en vivo cuánto pagás.</p>
+                  <h2 className="title-lux mt-2 text-[34px]">Entregá tu <b>iPhone</b></h2>
+                  <p className="mt-1 text-[16px] text-muted">Elegí el que te querés llevar y mirá en vivo cuánto pagás.</p>
                 </div>
                 <button type="button" onClick={closeTradeIn} aria-label="Cerrar" className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-fg/[.07] ring-1 ring-line transition hover:bg-fg/15">
                   <X className="h-4 w-4" strokeWidth={1.5} />
@@ -107,7 +108,7 @@ export function CanjeDrawer() {
                 {STEPS.map((s, i) => (
                   <li key={s}>
                     <span className={clsx("block h-1 rounded-full transition-colors duration-500", i <= step ? "bg-brand" : "bg-fg/10")} />
-                    <span className={clsx("mt-2 block text-xs font-semibold", i === step ? "text-fg" : "text-muted")}>
+                    <span className={clsx("mt-2 block text-[13px] font-semibold", i === step ? "text-fg" : "text-muted")}>
                       {i + 1}. {s}
                     </span>
                   </li>
@@ -116,12 +117,24 @@ export function CanjeDrawer() {
             </div>
 
             {/* contenido */}
-            <div className="flex-1 overflow-y-auto px-6 py-6">
+            <div
+              ref={body}
+              className="flex-1 overflow-y-auto px-6 py-6"
+              onClick={autoAdvance((el) => {
+                const c = body.current;
+                if (!c) return;
+                // la pregunta siguiente queda centrada en el panel (o arriba si es más alta)
+                const r = el.getBoundingClientRect();
+                const cr = c.getBoundingClientRect();
+                const pad = r.height < c.clientHeight - 32 ? (c.clientHeight - r.height) / 2 : 16;
+                c.scrollTo({ top: r.top - cr.top + c.scrollTop - pad, behavior: "smooth" });
+              })}
+            >
               <AnimatePresence mode="wait">
                 <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35, ease }} className="space-y-7">
                   {step === 0 && (
                     <Q title="¿Cuál te querés llevar?" hint="Elegilo y mirá en vivo cuánto pagás. Si todavía no sabés, seguí igual.">
-                      <PhonePicker f={f} />
+                      <PhonePicker f={f} onPicked={() => setTimeout(() => setStep(1), 380)} />
                     </Q>
                   )}
                   {step === 1 && <DeviceQuestions f={f} />}
@@ -129,7 +142,7 @@ export function CanjeDrawer() {
                     <>
                       <StateQuestions f={f} />
                       <NameField f={f} />
-                      <p className="rounded-2xl bg-fg/[.05] p-3 text-sm text-muted">{f.settings.tradeIn.note}</p>
+                      <p className="rounded-2xl bg-fg/[.05] p-3 text-[15px] text-muted">{f.settings.tradeIn.note}</p>
                     </>
                   )}
                 </motion.div>

@@ -18,7 +18,7 @@ import { getGoogleReviews } from "@/lib/reviews";
 // Los datos cambian cuando el local carga productos: se lee en cada visita.
 export const dynamic = "force-dynamic";
 
-/** Encabezado corto → catálogo de iPhone → beneficios → ubicación → Plan Canje → reseñas de Google. Financiaciones entre el encabezado y el catálogo. Además, el Plan Canje flotante. */
+/** Encabezado corto → catálogo de iPhone → beneficios → Plan Canje → reseñas de Google → ubicación y horarios. Financiaciones entre el encabezado y el catálogo. Además, el Plan Canje flotante. */
 export default async function Home() {
   const { products, settings } = await getPublicData();
   const reviews = await getGoogleReviews(`Liberados Paraná ${settings.contact.address} Paraná Entre Ríos`);
@@ -32,9 +32,9 @@ export default async function Home() {
         <Financiaciones />
         <Catalog />
         <Benefits />
-        <Visit />
         <PlanCanje />
         <Reviews data={reviews} />
+        <Visit />
       </main>
       <Footer />
       <WhatsAppFab />

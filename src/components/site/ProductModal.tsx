@@ -4,13 +4,12 @@ import clsx from "clsx";
 import { ArrowLeftRight, Check, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
-import { conditions } from "@/brand.config";
 import { discount } from "@/lib/deal";
 import { waLink } from "@/lib/format";
 import type { PublicProduct, Spec } from "@/lib/types";
 import { Badge } from "./Catalog";
 import { WhatsAppIcon } from "./icons";
-import { ProductVisual } from "./ProductVisual";
+import { PhotoSlider } from "./ProductVisual";
 import { Price, priceText } from "./Price";
 import { useSite } from "./SiteContext";
 
@@ -90,19 +89,17 @@ export function ProductModal() {
               className="relative overflow-hidden px-4 pb-6 pt-14 md:px-8 md:pt-10"
               style={{ background: `radial-gradient(45% 60% at 50% 45%, color-mix(in oklab, ${p.color} 45%, transparent), transparent 70%), linear-gradient(180deg, var(--ink-3), var(--ink-2))` }}
             >
-              <div className="relative mx-auto h-[300px] max-w-5xl md:h-[440px]">
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={img}
-                    className="absolute inset-y-0 left-1/2 w-[62%] -translate-x-1/2 md:w-[34%]"
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 1.03 }}
-                    transition={{ duration: 0.5, ease }}
-                  >
-                    <ProductVisual product={p} index={img} />
-                  </motion.div>
-                </AnimatePresence>
+              <div className="relative mx-auto max-w-5xl">
+                {/* fotos: recuadro redondeado, se deslizan para los costados */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.94, y: 16 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ duration: 0.55, ease }}
+                  className="relative mx-auto aspect-[4/3.4] w-full max-w-[460px] overflow-hidden rounded-[26px] shadow-[0_40px_80px_-30px_rgba(0,0,0,.75)] ring-1 ring-fg/15 md:w-[40%]"
+                  style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }}
+                >
+                  <PhotoSlider product={p} index={img} onIndex={setImg} />
+                </motion.div>
 
                 {/* carteles con flecha (PC) */}
                 <div className="hidden md:block">
@@ -118,11 +115,11 @@ export function ProductModal() {
                     <button
                       key={src}
                       onClick={() => setImg(i)}
-                      className={clsx("h-14 w-14 overflow-hidden rounded-xl bg-fg/[.06] p-1 ring-2 transition", i === img ? "ring-cyan" : "ring-transparent opacity-60 hover:opacity-100")}
+                      className={clsx("aspect-[4/3.4] h-14 overflow-hidden rounded-xl bg-fg/[.06] ring-2 transition", i === img ? "ring-cyan" : "ring-transparent opacity-60 hover:opacity-100")}
                       aria-label={`Foto ${i + 1}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="" className="h-full w-full object-contain" />
+                      <img src={src} alt="" className="h-full w-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -151,7 +148,6 @@ export function ProductModal() {
             <div className="grid gap-8 p-6 md:grid-cols-[1.3fr_1fr] md:p-10">
               <div>
                 <div className="flex flex-wrap gap-2">
-                  <Badge tone={conditions[p.condition].tone}>{conditions[p.condition].label}</Badge>
                   {p.priceOnRequest ? <Badge tone="cyan">Consultá disponibilidad</Badge> : p.stock <= 0 ? <Badge tone="gray">Sin stock — consultá</Badge> : p.condition === "usado" ? <Badge tone="cyan">Unidad única</Badge> : p.stock <= 2 ? <Badge tone="amber">Últimas unidades</Badge> : <Badge tone="cyan">En stock</Badge>}
                 </div>
                 <p className="mt-5 text-muted">{p.brand}</p>
@@ -198,7 +194,7 @@ function Callout({ spec, side, top, delay }: { spec: Spec; side: "left" | "right
   const left = side === "left";
   return (
     <div
-      className={clsx("absolute flex w-[33%] -translate-y-1/2 items-center", left ? "left-0 flex-row" : "right-0 flex-row-reverse")}
+      className={clsx("absolute flex w-[30%] -translate-y-1/2 items-center", left ? "left-0 flex-row" : "right-0 flex-row-reverse")}
       style={{ top }}
     >
       <motion.div
