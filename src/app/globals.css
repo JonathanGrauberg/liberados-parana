@@ -99,8 +99,8 @@ body {
    Va por dentro (offset negativo) para no cambiar el tamaño ni chocar con las sombras. */
 .ring-brand {
   position: relative;
-  outline: 1.5px solid rgba(150, 118, 255, 0.6);
-  outline-offset: -1.5px;
+  outline: 1px solid rgba(160, 132, 255, 0.55);
+  outline-offset: -1px;
 }
 
 /* Grano sutil para fondos oscuros */
