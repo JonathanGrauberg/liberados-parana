@@ -54,7 +54,7 @@ export function CountUp({ value, format, className, duration = 1.2 }: { value: n
 
 /**
  * Precio de un producto, igual en toda la web:
- * - efectivo en grande (si lo hay), lista abajo
+ * - efectivo en grande (si lo hay); el precio de lista es interno del local y no se muestra
  * - si está en dólares, el equivalente en pesos con la cotización del local
  * - "Consultá precio" cuando no se publica
  */
@@ -73,7 +73,6 @@ export function Price({ p, size = "sm", className }: { p: PublicProduct; size?: 
 
   const cur = p.currency ?? "ARS";
   const lead = p.cashPrice || p.price;
-  const showList = !!p.cashPrice && p.price > p.cashPrice;
   const ars = cur === "USD" && rate > 0 ? toArs(lead, cur, rate) : 0;
   const fmt = (n: number) => inCurrency(n, cur);
 
@@ -89,7 +88,6 @@ export function Price({ p, size = "sm", className }: { p: PublicProduct; size?: 
           ≈ {money(ars)}
         </p>
       )}
-      {showList && <p className={clsx("text-muted", size === "sm" ? "text-[14px]" : "text-sm")}>Lista {inCurrency(p.price, cur)}</p>}
       {p.installments && (
         <p className={clsx("font-medium text-accent", size === "sm" ? "text-[14px]" : "text-sm")}>
           {p.installments.count} cuotas de {money(p.installments.amount)}
@@ -103,5 +101,5 @@ export function Price({ p, size = "sm", className }: { p: PublicProduct; size?: 
 export function priceText(p: PublicProduct) {
   if (p.priceOnRequest) return "";
   const cur = p.currency ?? "ARS";
-  return p.cashPrice ? `${inCurrency(p.cashPrice, cur)} efectivo / ${inCurrency(p.price, cur)} lista` : inCurrency(p.price, cur);
+  return p.cashPrice ? `${inCurrency(p.cashPrice, cur)} efectivo` : inCurrency(p.price, cur);
 }

@@ -14,8 +14,6 @@ import { Price, priceText } from "./Price";
 import { useSite } from "./SiteContext";
 
 const ease = [0.22, 1, 0.36, 1] as const;
-// alturas de los carteles a cada lado del equipo
-const ROWS = ["18%", "50%", "82%"];
 
 /** Características que se muestran con flechas alrededor del equipo (se cargan en el panel). */
 function calloutsFor(p: PublicProduct): Spec[] {
@@ -72,9 +70,9 @@ export function ProductModal() {
             exit={{ y: "100%", opacity: 0 }}
             transition={{ type: "spring", stiffness: 260, damping: 32 }}
             onClick={(e) => e.stopPropagation()}
-            className="relative max-h-[94dvh] w-full max-w-6xl overflow-y-auto rounded-t-[28px] bg-ink-2 ring-1 ring-line md:rounded-[28px]"
+            className="relative max-h-[94dvh] w-full max-w-6xl overflow-y-auto rounded-t-[28px] bg-ink-2 ring-1 ring-line md:grid md:max-h-[92dvh] md:grid-cols-[minmax(0,1.12fr)_minmax(0,1fr)] md:overflow-hidden md:rounded-[28px]"
           >
-            <div className="sticky top-0 z-30 h-0">
+            <div className="sticky top-0 z-30 h-0 md:absolute md:inset-x-0">
               <button
                 onClick={() => openProduct(null)}
                 className="absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-fg/10 ring-1 ring-line backdrop-blur transition hover:bg-fg/20"
@@ -84,30 +82,20 @@ export function ProductModal() {
               </button>
             </div>
 
-            {/* Escenario: equipo al centro y características con flechas */}
+            {/* Escenario: la foto grande, se desliza para los costados */}
             <div
-              className="relative overflow-hidden px-4 pb-6 pt-14 md:px-8 md:pt-10"
-              style={{ background: `radial-gradient(45% 60% at 50% 45%, color-mix(in oklab, ${p.color} 45%, transparent), transparent 70%), linear-gradient(180deg, var(--ink-3), var(--ink-2))` }}
+              className="relative flex flex-col items-center justify-center overflow-hidden px-4 pb-6 pt-14 md:py-8 md:pl-8 md:pr-3"
+              style={{ background: `radial-gradient(55% 60% at 50% 45%, color-mix(in oklab, ${p.color} 45%, transparent), transparent 70%), linear-gradient(180deg, var(--ink-3), var(--ink-2))` }}
             >
-              <div className="relative mx-auto max-w-5xl">
-                {/* fotos: recuadro redondeado, se deslizan para los costados */}
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.94, y: 16 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{ duration: 0.55, ease }}
-                  className="relative mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-[26px] shadow-[0_40px_80px_-30px_rgba(0,0,0,.75)] ring-1 ring-fg/15 md:w-[40%]"
-                  style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }}
-                >
-                  <PhotoSlider product={p} index={img} onIndex={setImg} />
-                </motion.div>
-
-                {/* carteles con flecha (PC) */}
-                <div className="hidden md:block">
-                  {callouts.map((c, i) => (
-                    <Callout key={c.label + i} spec={c} side={i % 2 === 0 ? "left" : "right"} top={ROWS[Math.floor(i / 2)]} delay={0.35 + i * 0.12} />
-                  ))}
-                </div>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, scale: 0.94, y: 16 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ duration: 0.55, ease }}
+                className="relative aspect-square w-full max-w-[460px] overflow-hidden rounded-[26px] shadow-[0_40px_80px_-30px_rgba(0,0,0,.75)] ring-1 ring-fg/15 md:h-[min(72dvh,640px)] md:w-auto md:max-w-full"
+                style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }}
+              >
+                <PhotoSlider product={p} index={img} onIndex={setImg} />
+              </motion.div>
 
               {p.images.length > 1 && (
                 <div className="relative mt-4 flex justify-center gap-2">
@@ -127,7 +115,7 @@ export function ProductModal() {
 
               {/* características en celular */}
               {callouts.length > 0 && (
-                <ul className="relative mt-5 grid grid-cols-2 gap-2 md:hidden">
+                <ul className="relative mt-5 grid w-full grid-cols-2 gap-2 md:hidden">
                   {callouts.map((c, i) => (
                     <motion.li
                       key={c.label + i}
@@ -145,38 +133,48 @@ export function ProductModal() {
             </div>
 
             {/* Info y compra */}
-            <div className="grid gap-8 p-6 md:grid-cols-[1.3fr_1fr] md:p-10">
+            <div className="flex flex-col gap-6 p-6 md:justify-center md:gap-5 md:overflow-y-auto md:py-10 md:pl-16 md:pr-10">
               <div>
                 <div className="flex flex-wrap gap-2">
                   {p.priceOnRequest ? <Badge tone="cyan">Consultá disponibilidad</Badge> : p.stock <= 0 ? <Badge tone="gray">Sin stock — consultá</Badge> : p.condition === "usado" ? <Badge tone="cyan">Unidad única</Badge> : p.stock <= 2 ? <Badge tone="amber">Últimas unidades</Badge> : <Badge tone="cyan">En stock</Badge>}
                 </div>
-                <p className="mt-5 text-muted">{p.brand}</p>
-                <h3 className="title-lux text-4xl md:text-5xl">{p.name}</h3>
+                <p className="mt-4 text-muted">{p.brand}</p>
+                <h3 className="title-lux text-4xl lg:text-5xl">{p.name}</h3>
                 <p className="mt-2 text-lg text-muted">{[p.storage, p.colorName].filter(Boolean).join(" · ")}</p>
-                {p.description && <p className="mt-5 max-w-xl text-lg leading-relaxed text-fg/70">{p.description}</p>}
-                <ul className="mt-6 space-y-2 text-[15px] text-muted">
-                  <li className="flex items-center gap-2"><Check className="h-5 w-5 text-accent" /> Lo probás en el local antes de llevarlo</li>
-                </ul>
               </div>
 
-              <div className="rounded-3xl bg-fg/[.04] p-6 ring-1 ring-line">
+              {/* características con flecha hacia la foto (PC) */}
+              {callouts.length > 0 && (
+                <div className="hidden flex-wrap gap-x-4 gap-y-2.5 md:flex">
+                  {callouts.map((c, i) => (
+                    <Callout key={c.label + i} spec={c} delay={0.35 + i * 0.12} arrow={i === 0} />
+                  ))}
+                </div>
+              )}
+
+              {p.description && <p className="max-w-xl text-[17px] leading-relaxed text-fg/70 md:line-clamp-3">{p.description}</p>}
+              <p className="flex items-center gap-2 text-[15px] text-muted">
+                <Check className="h-5 w-5 text-accent" /> Lo probás en el local antes de llevarlo
+              </p>
+
+              <div className="rounded-3xl bg-fg/[.04] p-5 ring-1 ring-line md:p-6">
                 {off > 0 && <p className="mb-2 w-fit rounded-full bg-pink px-2.5 py-1 text-xs font-extrabold text-ink">−{off}%</p>}
                 <Price p={p} size="lg" />
-                <div className="mt-6 grid gap-3">
+                <div className="mt-5 grid gap-3">
                   <a
                     href={waLink(settings.contact.whatsapp, msg)}
                     target="_blank"
                     rel="noopener"
-                    className="flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-[#1fae55] text-lg font-semibold text-white transition hover:brightness-110 active:scale-[.98]"
+                    className="flex min-h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-[#1fae55] px-3 text-[16px] font-semibold text-white transition hover:brightness-110 active:scale-[.98]"
                   >
-                    <WhatsAppIcon className="h-6 w-6" /> Consultar por WhatsApp
+                    <WhatsAppIcon className="h-6 w-6 shrink-0" /> Consultar por WhatsApp
                   </a>
                   {p.category === "celulares" && (
                     <button
                       onClick={() => startTradeIn(p.id)}
-                      className="ring-brand flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl bg-fg/[.04] text-lg font-semibold transition hover:bg-fg/[.08] active:scale-[.98]"
+                      className="ring-brand flex min-h-14 w-full items-center justify-center gap-2.5 rounded-2xl bg-fg/[.04] px-3 text-[16px] font-semibold transition hover:bg-fg/[.08] active:scale-[.98]"
                     >
-                      <ArrowLeftRight className="h-5 w-5" /> Entregar mi iPhone
+                      <ArrowLeftRight className="h-5 w-5 shrink-0" /> Entregar mi iPhone
                     </button>
                   )}
                 </div>
@@ -189,32 +187,29 @@ export function ProductModal() {
   );
 }
 
-/** Cartel con línea y flecha que apunta al equipo. */
-function Callout({ spec, side, top, delay }: { spec: Spec; side: "left" | "right"; top: string; delay: number }) {
-  const left = side === "left";
+/** Cartel de característica; el primero tira una línea con flecha hacia la foto. */
+function Callout({ spec, delay, arrow }: { spec: Spec; delay: number; arrow: boolean }) {
   return (
-    <div
-      className={clsx("absolute flex w-[30%] -translate-y-1/2 items-center", left ? "left-0 flex-row" : "right-0 flex-row-reverse")}
-      style={{ top }}
-    >
+    <div className={clsx("relative flex items-center", arrow && "-ml-16")}>
+      {arrow && (
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: delay + 0.25, duration: 0.7, ease }}
+          className="relative h-px w-16 origin-right bg-gradient-to-l from-fg/10 to-cyan"
+        >
+          <span className="absolute -left-0.5 top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_12px_var(--cyan)]" />
+          <span className="absolute -left-2 top-1/2 h-4 w-4 -translate-y-1/2 animate-ping rounded-full bg-cyan/40" />
+        </motion.div>
+      )}
       <motion.div
-        initial={{ opacity: 0, x: left ? -16 : 16 }}
+        initial={{ opacity: 0, x: 16 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay, duration: 0.6, ease }}
-        className={clsx("shrink-0 rounded-2xl bg-fg/[.07] px-4 py-2.5 ring-1 ring-line backdrop-blur", left ? "text-right" : "text-left")}
+        className="shrink-0 rounded-2xl bg-fg/[.07] px-4 py-2.5 ring-1 ring-line backdrop-blur"
       >
         <p className="eyebrow !text-[10px]">{spec.label}</p>
         <p className="font-display mt-1 text-[15px] font-bold leading-tight">{spec.value}</p>
-      </motion.div>
-      {/* línea que crece hacia el equipo */}
-      <motion.div
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: 1 }}
-        transition={{ delay: delay + 0.25, duration: 0.7, ease }}
-        className={clsx("relative h-px flex-1", left ? "origin-left bg-gradient-to-r" : "origin-right bg-gradient-to-l", "from-fg/10 to-cyan")}
-      >
-        <span className={clsx("absolute top-1/2 h-1.5 w-1.5 -translate-y-1/2 rounded-full bg-cyan shadow-[0_0_12px_var(--cyan)]", left ? "-right-0.5" : "-left-0.5")} />
-        <span className={clsx("absolute top-1/2 h-4 w-4 -translate-y-1/2 animate-ping rounded-full bg-cyan/40", left ? "-right-2" : "-left-2")} />
       </motion.div>
     </div>
   );
