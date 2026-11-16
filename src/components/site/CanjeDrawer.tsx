@@ -149,8 +149,8 @@ export function CanjeDrawer() {
               </AnimatePresence>
             </div>
 
-            {/* resultado en vivo: solo la diferencia a pagar */}
-            <div className="relative overflow-hidden border-t border-line bg-fg/[.04] px-6 py-4">
+            {/* resultado en vivo: solo la diferencia a pagar (en celular, recién en el último paso, para no tapar las preguntas) */}
+            <div className={clsx("relative overflow-hidden border-t border-line bg-fg/[.04] px-6 py-4", step < 2 && "max-md:hidden")}>
               <div className="pointer-events-none absolute -left-10 -top-16 h-40 w-40 rounded-full bg-cyan/20 blur-[60px]" />
               <div className="pointer-events-none absolute -bottom-16 right-0 h-40 w-40 rounded-full bg-pink/25 blur-[60px]" />
               <LiveResult f={f} />

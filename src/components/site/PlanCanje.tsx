@@ -14,7 +14,7 @@ export function PlanCanje() {
   const scrollTo = (el: HTMLElement) => {
     const r = el.getBoundingClientRect();
     const top = 110; // barra del dólar + menú
-    const bottom = window.innerWidth >= 1024 ? 24 : 190; // en celular abajo está pegado el resultado
+    const bottom = 24;
     const room = window.innerHeight - top - bottom;
     // si la pregunta es más alta que el espacio, se alinea arriba; si no, al centro
     const y = window.scrollY + r.top - top - (r.height < room ? (room - r.height) / 2 : 0);
@@ -72,24 +72,8 @@ export function PlanCanje() {
           </div>
           <StateQuestions f={f} grid numbered={5} />
           <NameField f={f} n={8} />
-          {/* en celular el resultado queda pegado abajo mientras se completa */}
-          <div className="sticky bottom-24 z-10 lg:hidden">
-            <div className="ring-brand relative flex items-end gap-3 overflow-hidden rounded-3xl bg-[#0b0d2b]/90 p-4 shadow-[0_20px_50px_-20px_rgba(0,0,0,.7)] backdrop-blur-xl">
-              <div className="min-w-0 flex-1">
-                <LiveResult f={f} />
-              </div>
-              <button
-                type="button"
-                onClick={f.send}
-                disabled={!f.deviceOk || !f.stateOk}
-                aria-label="Enviar cotización por WhatsApp"
-                className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-[#1fae55] text-white transition disabled:opacity-40"
-              >
-                <WhatsAppIcon className="h-6 w-6" />
-              </button>
-            </div>
-          </div>
-          <p className="text-xs text-muted lg:hidden">{f.settings.tradeIn.note}</p>
+          {/* en celular el resultado va al final (no flotante, para no tapar las preguntas) */}
+          <div className="lg:hidden">{result}</div>
         </div>
       </div>
     </section>

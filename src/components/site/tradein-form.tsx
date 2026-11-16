@@ -86,7 +86,7 @@ export type TradeInForm = ReturnType<typeof useTradeInForm>;
  */
 export function autoAdvance(scrollTo: (el: HTMLElement) => void) {
   return (e: MouseEvent<HTMLElement>) => {
-    const btn = (e.target as HTMLElement).closest<HTMLElement>("button[aria-pressed]");
+    const btn = (e.target as HTMLElement).closest<HTMLElement>("button[aria-pressed], button[data-next]");
     if (!btn || btn.dataset.stay != null) return;
     const qs = [...e.currentTarget.querySelectorAll<HTMLElement>("[data-q]")];
     const next = qs[qs.indexOf(btn.closest<HTMLElement>("[data-q]")!) + 1];
@@ -200,9 +200,32 @@ export function DeviceQuestions({ f, grid, numbered }: { f: TradeInForm; grid?: 
         </div>
       </Q>
       <Q n={n(2)} title="Salud de batería" hint="En el iPhone: Ajustes › Batería › Estado. Si no sabés, dejalo vacío.">
-        <div className="relative w-40">
-          <input inputMode="numeric" value={f.battery} onChange={(e) => f.setBattery(e.target.value.replace(/\D/g, "").slice(0, 3))} placeholder="Ej.: 87" className={clsx(inputCls, "pr-9")} />
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">%</span>
+        <div className="flex items-center gap-2">
+          <div className="relative w-40">
+            <input
+              inputMode="numeric"
+              enterKeyHint="done"
+              value={f.battery}
+              onChange={(e) => f.setBattery(e.target.value.replace(/\D/g, "").slice(0, 3))}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                e.preventDefault();
+                e.currentTarget.parentElement?.parentElement?.querySelector<HTMLButtonElement>("[data-next]")?.click();
+              }}
+              placeholder="Ej.: 87"
+              className={clsx(inputCls, "pr-9")}
+            />
+            <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted">%</span>
+          </div>
+          {/* cierra el teclado y pasa a la pregunta siguiente */}
+          <button
+            type="button"
+            data-next
+            onClick={() => (document.activeElement as HTMLElement | null)?.blur()}
+            className="bg-brand flex h-12 items-center gap-1.5 rounded-2xl px-5 text-[17px] font-bold text-[#07071a] transition hover:brightness-110"
+          >
+            <Check className="h-5 w-5" /> {f.battery ? "Listo" : "No sé"}
+          </button>
         </div>
       </Q>
     </>
