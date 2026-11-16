@@ -187,7 +187,7 @@ export function CropDialog({ req }: { req: CropRequest }) {
             type="button"
             disabled={!nat || saving}
             onClick={save}
-            className="bg-brand ml-auto flex h-12 min-w-40 flex-1 items-center justify-center gap-2 rounded-2xl text-[15px] font-bold text-ink hover:brightness-105 disabled:opacity-50 sm:flex-none sm:px-6"
+            className="bg-brand ml-auto flex h-12 min-w-40 flex-1 items-center justify-center gap-2 rounded-2xl text-[15px] font-bold text-white hover:brightness-125 disabled:opacity-50 sm:flex-none sm:px-6"
           >
             <Check className="h-5 w-5" /> {saving ? "Guardando…" : "Listo, usar así"}
           </button>

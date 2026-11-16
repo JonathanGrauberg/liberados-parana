@@ -12,7 +12,7 @@ export default async function Products() {
         title="Productos"
         subtitle={`${products.length} cargados · ${products.reduce((s, p) => s + p.stock, 0)} unidades en stock`}
         action={
-          <Link href="/admin-lp/productos/nuevo" className="bg-brand inline-flex h-12 items-center gap-2 rounded-xl px-5 font-bold text-ink">
+          <Link href="/admin-lp/productos/nuevo" className="bg-brand inline-flex h-12 items-center gap-2 rounded-xl px-5 font-bold text-white">
             <Plus className="h-5 w-5" /> Nuevo producto
           </Link>
         }

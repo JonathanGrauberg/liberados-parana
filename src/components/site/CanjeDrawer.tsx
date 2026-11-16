@@ -20,7 +20,7 @@ export function CanjeTrigger() {
       <button
         type="button"
         onClick={() => startTradeIn()}
-        className="group fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-3 rounded-l-2xl bg-brand px-3 py-5 font-bold text-[#07071a] shadow-[0_12px_40px_-10px_rgba(123,127,220,.8)] transition hover:pr-4 md:flex"
+        className="group fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-center gap-3 rounded-l-2xl bg-brand px-3 py-5 font-bold text-white shadow-[0_12px_40px_-10px_rgba(123,127,220,.8)] transition hover:pr-4 md:flex"
         aria-label="Abrir Plan Canje"
       >
         <ArrowLeftRight className="h-4 w-4" />
@@ -29,7 +29,7 @@ export function CanjeTrigger() {
       <button
         type="button"
         onClick={() => startTradeIn()}
-        className="fixed bottom-5 left-5 z-40 flex h-14 items-center gap-2 rounded-full bg-brand px-5 text-[15px] font-bold text-[#07071a] shadow-[0_12px_40px_-8px_rgba(123,127,220,.8)] md:hidden"
+        className="fixed bottom-5 left-5 z-40 flex h-14 items-center gap-2 rounded-full bg-brand px-5 text-[15px] font-bold text-white shadow-[0_12px_40px_-8px_rgba(123,127,220,.8)] md:hidden"
       >
         <ArrowLeftRight className="h-4 w-4" /> Entregar mi iPhone
       </button>
@@ -91,7 +91,7 @@ export function CanjeDrawer() {
             transition={{ duration: 0.6, ease }}
             className={clsx("absolute flex flex-col overflow-hidden border-line bg-[#0b0d2b] text-fg", panel.className)}
           >
-            <div aria-hidden className="h-1 shrink-0 bg-brand" />
+            <div aria-hidden className="h-1 shrink-0 bg-brand-line" />
             {/* encabezado */}
             <div className="border-b border-line px-6 pb-4 pt-5">
               <div className="flex items-start justify-between gap-4">
@@ -107,7 +107,7 @@ export function CanjeDrawer() {
               <ol className="mt-5 grid grid-cols-3 gap-2" aria-label="Pasos">
                 {STEPS.map((s, i) => (
                   <li key={s}>
-                    <span className={clsx("block h-1 rounded-full transition-colors duration-500", i <= step ? "bg-brand" : "bg-fg/10")} />
+                    <span className={clsx("block h-1 rounded-full transition-colors duration-500", i <= step ? "bg-brand-line" : "bg-fg/10")} />
                     <span className={clsx("mt-2 block text-[13px] font-semibold", i === step ? "text-fg" : "text-muted")}>
                       {i + 1}. {s}
                     </span>

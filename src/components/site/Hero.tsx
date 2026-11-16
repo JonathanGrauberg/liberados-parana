@@ -84,7 +84,7 @@ export function Hero() {
           </a>
         </motion.div>
       </div>
-      <div className="absolute inset-x-0 bottom-0 h-[3px] bg-brand" />
+      <div className="absolute inset-x-0 bottom-0 h-[3px] bg-brand-line" />
     </section>
   );
 }

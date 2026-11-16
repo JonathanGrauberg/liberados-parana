@@ -89,7 +89,7 @@ export function Financiaciones() {
               className="ring-brand relative flex flex-col overflow-hidden rounded-[28px] bg-ink-2 p-6 md:p-7"
             >
               <div className={i % 2 ? "pointer-events-none absolute -right-16 -top-20 h-52 w-52 rounded-full bg-pink/25 blur-[70px]" : "pointer-events-none absolute -left-16 -top-20 h-52 w-52 rounded-full bg-cyan/20 blur-[70px]"} />
-              <span className="bg-brand relative grid h-14 w-14 place-items-center rounded-2xl text-[#07071a]">
+              <span className="bg-brand relative grid h-14 w-14 place-items-center rounded-2xl text-white">
                 <Icon className="h-7 w-7" />
               </span>
               <h3 className="relative mt-5 font-display text-[26px] font-extrabold leading-tight tracking-tight">{title}</h3>

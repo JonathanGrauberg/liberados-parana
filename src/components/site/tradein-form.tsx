@@ -99,7 +99,7 @@ export function Q({ n, title, hint, children }: { n?: number; title: string; hin
   return (
     <div data-q>
       <h3 className="flex items-center gap-2.5 font-display text-[23px] font-bold tracking-tight md:text-2xl">
-        {n != null && <span className="bg-brand grid h-8 w-8 shrink-0 place-items-center rounded-full text-[15px] font-extrabold text-[#07071a]">{n}</span>}
+        {n != null && <span className="bg-brand grid h-8 w-8 shrink-0 place-items-center rounded-full text-[15px] font-extrabold text-white">{n}</span>}
         {title}
       </h3>
       {hint && <p className="mt-1 text-[15px] text-muted">{hint}</p>}
@@ -137,7 +137,7 @@ export function PhonePicker({ f, grid, onPicked }: { f: TradeInForm; grid?: bool
         {(["usados", "nuevos"] as const).map((t) => (
           <button key={t} type="button" onClick={() => f.setTab(t)} className={clsx("relative pb-3 text-[17px] font-semibold", f.tab === t ? "text-fg" : "text-muted")}>
             {t === "usados" ? "Usados seleccionados" : "Nuevos en caja"}
-            {f.tab === t && <span className="absolute inset-x-0 -bottom-px h-[2px] bg-brand" />}
+            {f.tab === t && <span className="absolute inset-x-0 -bottom-px h-[2px] bg-brand-line" />}
           </button>
         ))}
       </div>
@@ -235,7 +235,7 @@ export function DeviceQuestions({ f, grid, numbered }: { f: TradeInForm; grid?: 
             type="button"
             data-next
             onClick={() => (document.activeElement as HTMLElement | null)?.blur()}
-            className="bg-brand flex h-12 items-center gap-1.5 rounded-2xl px-5 text-[17px] font-bold text-[#07071a] transition hover:brightness-110"
+            className="bg-brand flex h-12 items-center gap-1.5 rounded-2xl px-5 text-[17px] font-bold text-white transition hover:brightness-125"
           >
             <Check className="h-5 w-5" /> {f.battery ? "Listo" : "No sé"}
           </button>

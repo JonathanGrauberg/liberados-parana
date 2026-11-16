@@ -63,7 +63,7 @@ export function Visit() {
               {order.map((d) => (
                 <li key={d} className={clsx("flex items-center justify-between py-3 text-[16px]", d === today ? "font-semibold text-fg" : "text-muted")}>
                   <span className="flex items-center gap-2">
-                    {d === today && <span className="bg-brand h-2 w-2 rounded-full" />}
+                    {d === today && <span className="bg-brand-line h-2 w-2 rounded-full" />}
                     {DAY_NAMES[d]}
                     {d === today && <span className="text-sm font-normal text-accent">hoy</span>}
                   </span>

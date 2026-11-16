@@ -14,7 +14,7 @@ export function Benefits() {
   // se repite la lista para que la cinta nunca quede con huecos, y todo dos veces para el loop infinito
   const run = [...items, ...items, ...items, ...items];
   return (
-    <section aria-label="Por qué elegirnos" className="bg-brand group relative overflow-hidden py-4 text-[#07071a] shadow-[0_20px_60px_-20px_rgba(123,127,220,.6)] md:py-5">
+    <section aria-label="Por qué elegirnos" className="bg-brand group relative overflow-hidden py-4 text-white shadow-[0_20px_60px_-20px_rgba(123,127,220,.6)] md:py-5">
       <ul className="sr-only">
         {items.map((it) => (
           <li key={it.title}>{it.title}: {it.sub}</li>

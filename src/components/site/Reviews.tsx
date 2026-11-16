@@ -81,7 +81,7 @@ export function Reviews({ data }: { data: GoogleReviews | null }) {
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={r.photo} alt="" referrerPolicy="no-referrer" className="h-10 w-10 rounded-full" />
                     ) : (
-                      <span className="bg-brand grid h-10 w-10 place-items-center rounded-full font-bold text-[#07071a]">{r.author[0]?.toUpperCase()}</span>
+                      <span className="bg-brand grid h-10 w-10 place-items-center rounded-full font-bold text-white">{r.author[0]?.toUpperCase()}</span>
                     )}
                     <span className="min-w-0 flex-1">
                       <span className="block truncate font-semibold">{r.author}</span>

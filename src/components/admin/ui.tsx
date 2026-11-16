@@ -51,7 +51,7 @@ export function Button({
       className={clsx(
         "inline-flex h-12 items-center justify-center gap-2 rounded-xl px-5 text-[15px] font-semibold transition active:scale-[.98] disabled:pointer-events-none disabled:opacity-50",
         variant === "primary" && "bg-text-dark text-white hover:bg-black",
-        variant === "brand" && "bg-brand text-ink hover:brightness-110",
+        variant === "brand" && "bg-brand text-white hover:brightness-125",
         variant === "ghost" && "bg-black/[.05] text-text-dark hover:bg-black/10",
         variant === "danger" && "bg-red-50 text-red-600 hover:bg-red-100",
         className,

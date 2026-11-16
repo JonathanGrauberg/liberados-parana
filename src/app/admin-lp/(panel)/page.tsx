@@ -20,7 +20,7 @@ export default async function Dashboard() {
       <PageTitle title="¡Hola! 👋" subtitle={`${status.label}${status.detail ? " · " + status.detail : ""}`} />
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <QuickAction href="/admin-lp/ventas?nueva=1" icon={<Receipt />} title="Registrar venta" tone="bg-brand text-ink" />
+        <QuickAction href="/admin-lp/ventas?nueva=1" icon={<Receipt />} title="Registrar venta" tone="bg-brand text-white" />
         <QuickAction href="/admin-lp/productos/nuevo" icon={<ImagePlus />} title="Cargar producto" tone="bg-text-dark text-white" />
         <QuickAction href="/admin-lp/ofertas" icon={<Megaphone />} title="Ofertas y cartel" tone="bg-white" />
         <QuickAction href="/admin-lp/horarios" icon={<CalendarClock />} title="Cambiar horarios" tone="bg-white" />

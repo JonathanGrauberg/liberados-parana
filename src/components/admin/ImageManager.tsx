@@ -264,7 +264,7 @@ function ReviewDialog({ review }: { review: Review }) {
           <button type="button" onClick={() => review.resolve("original")} className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-black/5 text-[16px] font-semibold hover:bg-black/10">
             <ImageIcon className="h-5 w-5" /> Usar la original
           </button>
-          <button type="button" onClick={() => review.resolve("cutout")} className="bg-brand flex h-14 items-center justify-center gap-2 rounded-2xl text-[16px] font-bold text-ink hover:brightness-105">
+          <button type="button" onClick={() => review.resolve("cutout")} className="bg-brand flex h-14 items-center justify-center gap-2 rounded-2xl text-[16px] font-bold text-white hover:brightness-125">
             <Check className="h-5 w-5" /> Usar sin fondo
           </button>
         </div>
