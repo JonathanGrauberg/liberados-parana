@@ -5,7 +5,7 @@ import { useRef, useState, useTransition } from "react";
 import { saveSettings } from "@/lib/actions";
 import type { ManualReview, Settings, TradeInPricing } from "@/lib/types";
 import { DEFAULT_PRICING, LOOKS, estimateTradeIn } from "@/lib/tradein";
-import { processImage, uploadBlob } from "@/lib/image-client";
+import { resizePhoto, uploadBlob } from "@/lib/image-client";
 import { Button, Card, Field, Input, Select, Textarea } from "./ui";
 
 export function SettingsEditor({ settings }: { settings: Settings }) {
@@ -114,19 +114,23 @@ function HeroPhotoCard({ initial }: { initial?: string }) {
   const [busy, setBusy] = useState(false);
   const [pending, start] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
   const file = useRef<HTMLInputElement>(null);
 
+  // achica la foto, la sube y la guarda; si algo falla, se avisa (antes fallaba sin decir nada)
   async function upload(f?: File) {
     if (!f) return;
     setBusy(true);
+    setSaved(false);
+    setError("");
     try {
-      const { blob } = await processImage(f, { trim: false });
+      const blob = await resizePhoto(f);
       const url = await uploadBlob(blob);
+      await saveSettings({ heroImage: url });
       setImg(url);
-      start(async () => {
-        await saveSettings({ heroImage: url });
-        setSaved(true);
-      });
+      setSaved(true);
+    } catch (e) {
+      setError(e instanceof Error && e.message ? e.message : "No se pudo cambiar la foto. Probá de nuevo.");
     } finally {
       setBusy(false);
       if (file.current) file.current.value = "";
@@ -159,17 +163,24 @@ function HeroPhotoCard({ initial }: { initial?: string }) {
             disabled={busy || pending}
             onClick={() =>
               start(async () => {
-                await saveSettings({ heroImage: "" });
-                setImg(undefined);
-                setSaved(true);
+                setError("");
+                try {
+                  await saveSettings({ heroImage: "" });
+                  setImg(undefined);
+                  setSaved(true);
+                } catch {
+                  setError("No se pudo guardar. Probá de nuevo.");
+                }
               })
             }
           >
             <RotateCcw className="h-4 w-4" /> Volver a la del cartel
           </Button>
         )}
-        {saved && !pending && <span className="flex items-center gap-1 text-sm font-semibold text-emerald-700"><Check className="h-4 w-4" /> Guardado</span>}
+        {saved && !pending && !busy && <span className="flex items-center gap-1 text-sm font-semibold text-emerald-700"><Check className="h-4 w-4" /> Listo, la portada nueva ya está en la web</span>}
+        {busy && <span className="text-sm font-medium text-text-mute">Subiendo la foto…</span>}
       </div>
+      {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm font-medium text-red-600">{error}</p>}
       <input ref={file} type="file" accept="image/*" hidden onChange={(e) => upload(e.target.files?.[0])} />
     </Card>
   );

@@ -106,9 +106,43 @@ function dominantColor(data: Uint8ClampedArray, w: number, h: number) {
 
 export async function uploadBlob(blob: Blob): Promise<string> {
   const fd = new FormData();
-  fd.append("file", new File([blob], "foto.webp", { type: blob.type || "image/webp" }));
+  const type = blob.type || "image/webp";
+  fd.append("file", new File([blob], type === "image/jpeg" ? "foto.jpg" : "foto.webp", { type }));
   const res = await fetch("/api/upload", { method: "POST", body: fd });
-  const json = await res.json();
-  if (!res.ok) throw new Error(json.error || "No se pudo subir la foto");
-  return json.url as string;
+  // si el servidor corta el pedido (ej.: foto muy pesada) no devuelve JSON
+  const json = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+  if (res.status === 401) throw new Error("Se cerró la sesión. Volvé a entrar al panel y probá de nuevo.");
+  if (!res.ok || !json.url) throw new Error(json.error || "No se pudo subir la foto. Probá de nuevo.");
+  return json.url;
+}
+
+/**
+ * Achica una foto común (portada, sin quitar fondo) directo al tamaño web.
+ * No abre la foto a tamaño completo: las del iPhone (12–48 MP) superan el límite de memoria del celular.
+ * Sale en JPG (Safari no sabe generar WebP).
+ */
+export async function resizePhoto(file: Blob, max = 2000): Promise<Blob> {
+  const src = URL.createObjectURL(file);
+  try {
+    const img = new Image();
+    img.src = src;
+    try {
+      await img.decode();
+    } catch {
+      throw new Error("No se pudo abrir esa foto. Probá con otra (JPG o PNG).");
+    }
+    const scale = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.round(img.naturalWidth * scale);
+    c.height = Math.round(img.naturalHeight * scale);
+    const ctx = c.getContext("2d");
+    if (!ctx) throw new Error("No se pudo procesar la foto.");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    const blob = await new Promise<Blob | null>((r) => c.toBlob(r, "image/jpeg", 0.85));
+    if (!blob) throw new Error("No se pudo procesar la foto.");
+    return blob;
+  } finally {
+    URL.revokeObjectURL(src);
+  }
 }
