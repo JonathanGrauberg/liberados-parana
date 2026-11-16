@@ -95,19 +95,12 @@ body {
   -webkit-backdrop-filter: saturate(180%) blur(20px);
 }
 
-/* Borde con degradé de marca */
-.ring-brand { position: relative; }
-.ring-brand::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  padding: 1px;
-  border-radius: inherit;
-  background: var(--brand-gradient);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
+/* Borde violeta de marca. Es un contorno real (no una máscara de 1px): la curva de las esquinas queda pareja y suave.
+   Va por dentro (offset negativo) para no cambiar el tamaño ni chocar con las sombras. */
+.ring-brand {
+  position: relative;
+  outline: 1.5px solid rgba(150, 118, 255, 0.6);
+  outline-offset: -1.5px;
 }
 
 /* Grano sutil para fondos oscuros */
