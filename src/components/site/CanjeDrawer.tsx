@@ -130,7 +130,7 @@ export function CanjeDrawer() {
                 c.scrollTo({ top: r.top - cr.top + c.scrollTop - pad, behavior: "smooth" });
               })}
             >
-              <AnimatePresence mode="wait">
+              <AnimatePresence mode="wait" onExitComplete={() => body.current?.scrollTo({ top: 0 })}>
                 <motion.div key={step} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.35, ease }} className="space-y-7">
                   {step === 0 && (
                     <Q title="¿Cuál te querés llevar?" hint="Elegilo y mirá en vivo cuánto pagás. Si todavía no sabés, seguí igual.">
@@ -143,14 +143,20 @@ export function CanjeDrawer() {
                       <StateQuestions f={f} />
                       <NameField f={f} />
                       <p className="rounded-2xl bg-fg/[.05] p-3 text-[15px] text-muted">{f.settings.tradeIn.note}</p>
+                      {/* celular: la cotización recién al final, después de todas las preguntas */}
+                      <div className="ring-brand relative overflow-hidden rounded-2xl bg-fg/[.04] p-5 md:hidden">
+                        <div className="pointer-events-none absolute -left-10 -top-16 h-40 w-40 rounded-full bg-cyan/20 blur-[60px]" />
+                        <div className="pointer-events-none absolute -bottom-16 right-0 h-40 w-40 rounded-full bg-pink/25 blur-[60px]" />
+                        <LiveResult f={f} />
+                      </div>
                     </>
                   )}
                 </motion.div>
               </AnimatePresence>
             </div>
 
-            {/* resultado en vivo: solo la diferencia a pagar (en celular, recién en el último paso, para no tapar las preguntas) */}
-            <div className={clsx("relative overflow-hidden border-t border-line bg-fg/[.04] px-6 py-4", step < 2 && "max-md:hidden")}>
+            {/* resultado en vivo: solo la diferencia a pagar (en PC fijo abajo; en celular va al final del último paso) */}
+            <div className="relative overflow-hidden border-t border-line bg-fg/[.04] px-6 py-4 max-md:hidden">
               <div className="pointer-events-none absolute -left-10 -top-16 h-40 w-40 rounded-full bg-cyan/20 blur-[60px]" />
               <div className="pointer-events-none absolute -bottom-16 right-0 h-40 w-40 rounded-full bg-pink/25 blur-[60px]" />
               <LiveResult f={f} />
