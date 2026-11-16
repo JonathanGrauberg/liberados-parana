@@ -5,6 +5,7 @@ import { Check } from "lucide-react";
 import { useEffect, useMemo, useState, type MouseEvent, type ReactNode } from "react";
 import { inCurrency, money, toArs, usd, waLink } from "@/lib/format";
 import { DEFAULT_PRICING, LOOKS, estimateTradeIn } from "@/lib/tradein";
+import { WhatsAppIcon } from "./icons";
 import { CountUp } from "./Price";
 import { ProductVisual } from "./ProductVisual";
 import { useSite } from "./SiteContext";
@@ -165,6 +166,18 @@ export function PhonePicker({ f, grid, onPicked }: { f: TradeInForm; grid?: bool
             </button>
           ))}
       </div>
+      {/* el equipo que busca no está en la web: lo mandamos a WhatsApp */}
+      <a
+        href={waLink(f.settings.contact.whatsapp, "¡Hola Liberados! Quiero hacer el Plan Canje pero no encuentro en la web el modelo que quiero. ¿Me ayudan?")}
+        target="_blank"
+        rel="noopener"
+        className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-dashed border-line-strong px-4 py-3 transition hover:bg-fg/[.05]"
+      >
+        <span className="text-[16px] font-medium text-fg/85">No encuentro el modelo que quiero</span>
+        <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#1fae55] px-4 py-2 text-[15px] font-semibold text-white">
+          <WhatsAppIcon className="h-4 w-4" /> Consultar
+        </span>
+      </a>
     </>
   );
 }

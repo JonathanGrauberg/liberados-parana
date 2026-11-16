@@ -247,7 +247,7 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
             {p.name} <span className="font-medium text-muted">{p.storage}</span>
           </h3>
           <div className="mt-1.5 flex min-h-7 flex-wrap items-center gap-x-2.5 gap-y-1">
-            {p.colorName && <span className="text-[15px] font-medium text-fg/75">{p.colorName}</span>}
+            {p.colorName && <span className="text-[17px] font-semibold text-fg/90">{p.colorName}</span>}
             {/* batería bien visible: es lo primero que mira el que compra un usado */}
             {p.battery ? (
               <span
