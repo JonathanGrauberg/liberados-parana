@@ -1,4 +1,3 @@
-import { Benefits } from "@/components/site/Benefits";
 import { CanjeDrawer, CanjeTrigger } from "@/components/site/CanjeDrawer";
 import { Catalog } from "@/components/site/Catalog";
 import { Financiaciones } from "@/components/site/Financiaciones";
@@ -18,7 +17,7 @@ import { getGoogleReviews } from "@/lib/reviews";
 // Los datos cambian cuando el local carga productos: se lee en cada visita.
 export const dynamic = "force-dynamic";
 
-/** Encabezado corto → catálogo de iPhone → beneficios → Plan Canje → reseñas de Google → ubicación y horarios. Financiaciones entre el encabezado y el catálogo. Además, el Plan Canje flotante. */
+/** Encabezado corto → catálogo de iPhone → Plan Canje → reseñas de Google → ubicación y horarios. Financiaciones entre el encabezado y el catálogo. Además, el Plan Canje flotante. */
 export default async function Home() {
   const { products, settings } = await getPublicData();
   const reviews = await getGoogleReviews(`Liberados Paraná ${settings.contact.address} Paraná Entre Ríos`);
@@ -31,7 +30,6 @@ export default async function Home() {
         <Hero />
         <Financiaciones />
         <Catalog />
-        <Benefits />
         <PlanCanje />
         <Reviews data={reviews} />
         <Visit />

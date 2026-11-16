@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { checkPassword, createSession, destroySession, isAdmin } from "./auth";
+import { MIN_PASSWORD, checkPassword, createSession, destroySession, isAdmin, setPassword } from "./auth";
 import { getSettings, productData, saveSettingsRow, slugify, uid } from "./db";
 import { prisma } from "./prisma";
 import type { PaymentMethod, Product, Sale, Settings, StockMove, WelcomePopup } from "./types";
@@ -23,7 +23,7 @@ const move = (productId: string, productName: string, delta: number, reason: Sto
 
 export async function loginAction(_: unknown, form: FormData) {
   const pass = String(form.get("password") ?? "");
-  if (!checkPassword(pass)) return { error: "Contraseña incorrecta" };
+  if (!(await checkPassword(pass))) return { error: "Contraseña incorrecta" };
   await createSession();
   redirect("/admin-lp");
 }
@@ -31,6 +31,21 @@ export async function loginAction(_: unknown, form: FormData) {
 export async function logoutAction() {
   await destroySession();
   redirect("/admin-lp/login");
+}
+
+/** El local cambia la contraseña del panel. Pide la actual; las demás sesiones abiertas se cierran. */
+export async function changePasswordAction(_: unknown, form: FormData) {
+  await guard();
+  const actual = String(form.get("actual") ?? "");
+  const nueva = String(form.get("nueva") ?? "");
+  const repetir = String(form.get("repetir") ?? "");
+  if (!(await checkPassword(actual))) return { error: "La contraseña actual no es correcta." };
+  if (nueva.length < MIN_PASSWORD) return { error: `La nueva tiene que tener al menos ${MIN_PASSWORD} caracteres.` };
+  if (nueva !== repetir) return { error: "Las dos contraseñas nuevas no coinciden." };
+  if (nueva === actual) return { error: "La nueva tiene que ser distinta de la actual." };
+  await setPassword(nueva);
+  await createSession(); // esta compu sigue adentro con la contraseña nueva
+  return { ok: true as const };
 }
 
 /* ───────────── Productos ───────────── */

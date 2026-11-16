@@ -92,18 +92,21 @@ export function Catalog() {
 
         {/* Filtros: se pegan debajo del navbar (el buscador va al lado del título) */}
         <div className="sticky-under-nav z-30 mt-8 overflow-hidden rounded-[26px] bg-[#151247]/90 p-2 backdrop-blur-xl md:p-3 shadow-[0_18px_40px_-18px_rgba(0,0,0,.6)] ring-1 ring-line">
-          <div className="flex items-center gap-2 md:gap-4">
+          {/* en celular: los 3 filtros entran enteros (sin scroll al costado) y el orden va abajo */}
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
             <LayoutGroup id="cond">
-              <div className="no-scrollbar -ml-3 flex min-w-0 flex-1 gap-2 overflow-x-auto pl-3 md:mx-0 md:px-0">
+              <div className="grid min-w-0 flex-1 grid-cols-3 gap-1.5 md:flex md:gap-2">
                 {(
                   [
-                    ["todos", "Todos"],
-                    ["usados", "Usados seleccionados"],
-                    ["nuevos", "Nuevos en caja"],
-                  ] as [Cond, string][]
-                ).map(([v, label]) => (
+                    ["todos", "Todos", "Todos"],
+                    ["usados", "Usados", "Usados seleccionados"],
+                    ["nuevos", "Nuevos", "Nuevos en caja"],
+                  ] as [Cond, string, string][]
+                ).map(([v, short, label]) => (
                   <Tab key={v} active={cond === v} onClick={() => setCond(v)}>
-                    {label} <span className={cond === v ? "opacity-60" : "text-muted"}>{counts[v]}</span>
+                    <span className="md:hidden">{short}</span>
+                    <span className="max-md:hidden">{label}</span>{" "}
+                    <span className={cond === v ? "opacity-60" : "text-muted"}>{counts[v]}</span>
                   </Tab>
                 ))}
               </div>
@@ -111,12 +114,12 @@ export function Catalog() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as Sort)}
-              className="h-11 w-fit shrink-0 rounded-full bg-fg/[.06] px-3 text-[14px] font-medium md:px-4 md:text-[15px] text-fg outline-none ring-1 ring-line [&>option]:text-text-dark"
+              className="h-11 w-full shrink-0 rounded-full bg-fg/[.06] px-4 text-[15px] font-medium text-fg outline-none ring-1 ring-line md:w-fit [&>option]:text-text-dark"
               aria-label="Ordenar"
             >
-              <option value="destacados">Destacados</option>
-              <option value="menor">Menor precio</option>
-              <option value="mayor">Mayor precio</option>
+              <option value="destacados">Ordenar: destacados</option>
+              <option value="menor">Ordenar: menor precio</option>
+              <option value="mayor">Ordenar: mayor precio</option>
             </select>
           </div>
         </div>
@@ -305,7 +308,7 @@ function Tab({ active, onClick, children }: { active: boolean; onClick: () => vo
     <button
       onClick={onClick}
       className={clsx(
-        "relative flex h-11 shrink-0 items-center gap-1.5 rounded-full px-5 text-[15px] font-semibold transition",
+        "relative flex h-11 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-full px-1.5 text-[14px] font-semibold transition min-[380px]:text-[15px] md:gap-1.5 md:px-5",
         active ? "text-ink" : "bg-fg/[.06] text-fg/80 ring-1 ring-line hover:bg-fg/[.1]",
       )}
     >
