@@ -200,7 +200,7 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
   return (
     <article className="group relative flex h-full flex-col rounded-[24px] bg-ink-2 p-2 ring-1 ring-line transition duration-500 hover:-translate-y-1 hover:shadow-[0_30px_60px_-24px_rgba(0,0,0,.7)] hover:ring-fg/20">
       {/* fotos: se deslizan para los costados; un toque abre la ficha */}
-      <Tilt className="relative aspect-[4/3.4] w-full overflow-hidden rounded-[18px]" max={4}>
+      <Tilt className="relative aspect-square w-full overflow-hidden rounded-[18px]" max={4}>
         {/* degradé con el color del equipo */}
         <div className="pointer-events-none absolute inset-0" style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }} />
         <PhotoSlider product={p} onOpen={onOpen} dim={out} />

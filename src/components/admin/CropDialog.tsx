@@ -3,8 +3,8 @@
 import { Check, Maximize, Minimize, Minus, Move, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from "react";
 
-/** Mismo formato que el recuadro de las tarjetas del catálogo (4 : 3,4). */
-export const CARD_ASPECT = 4 / 3.4;
+/** Mismo formato que el recuadro de las tarjetas del catálogo (cuadrado 1 : 1, como las fotos del celu). */
+export const CARD_ASPECT = 1;
 const OUT_W = 1400;
 const OUT_H = Math.round(OUT_W / CARD_ASPECT);
 const MIN_Z = 0.3;

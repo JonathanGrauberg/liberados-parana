@@ -95,7 +95,7 @@ export function ProductModal() {
                   initial={{ opacity: 0, scale: 0.94, y: 16 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   transition={{ duration: 0.55, ease }}
-                  className="relative mx-auto aspect-[4/3.4] w-full max-w-[460px] overflow-hidden rounded-[26px] shadow-[0_40px_80px_-30px_rgba(0,0,0,.75)] ring-1 ring-fg/15 md:w-[40%]"
+                  className="relative mx-auto aspect-square w-full max-w-[460px] overflow-hidden rounded-[26px] shadow-[0_40px_80px_-30px_rgba(0,0,0,.75)] ring-1 ring-fg/15 md:w-[40%]"
                   style={{ background: `linear-gradient(155deg, color-mix(in oklab, ${p.color} 38%, var(--ink-3)) 0%, var(--ink-2) 80%)` }}
                 >
                   <PhotoSlider product={p} index={img} onIndex={setImg} />
@@ -115,7 +115,7 @@ export function ProductModal() {
                     <button
                       key={src}
                       onClick={() => setImg(i)}
-                      className={clsx("aspect-[4/3.4] h-14 overflow-hidden rounded-xl bg-fg/[.06] ring-2 transition", i === img ? "ring-cyan" : "ring-transparent opacity-60 hover:opacity-100")}
+                      className={clsx("aspect-square h-14 overflow-hidden rounded-xl bg-fg/[.06] ring-2 transition", i === img ? "ring-cyan" : "ring-transparent opacity-60 hover:opacity-100")}
                       aria-label={`Foto ${i + 1}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
