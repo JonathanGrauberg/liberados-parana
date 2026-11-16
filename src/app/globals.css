@@ -176,15 +176,15 @@ body {
 .title-lux b { font-weight: 700; }
 
 /* Pegado debajo del navbar; sube a 0 cuando el navbar se oculta */
-.sticky-under-nav {
-  position: sticky;
-  top: 96px; /* franja del dólar (32) + navbar */
-  transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-}
+/* Solo en PC: en celular la barra de filtros se va con el scroll para no tapar los equipos */
 @media (min-width: 768px) {
-  .sticky-under-nav { top: 104px; }
+  .sticky-under-nav {
+    position: sticky;
+    top: 104px; /* franja del dólar (32) + navbar */
+    transition: top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  html[data-nav="hidden"] .sticky-under-nav { top: 32px; }
 }
-html[data-nav="hidden"] .sticky-under-nav { top: 32px; }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
