@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { ArrowLeftRight, ChevronDown, Search, X } from "lucide-react";
+import { ArrowLeftRight, BatteryFull, ChevronDown, Search, X } from "lucide-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useMemo, useState } from "react";
 import { discount } from "@/lib/deal";
@@ -157,11 +157,40 @@ export function Catalog() {
           </div>
         )}
 
+        {/* sin resultados: en vez de "no está", lo mandamos a WhatsApp (muchos equipos están en el local y no en la web) */}
         {!list.length && (
-          <div className="mt-8 rounded-[28px] bg-ink-2 py-20 text-center ring-1 ring-line">
-            <p className="title-lux text-2xl">No encontramos ese equipo todavía.</p>
-            <p className="mt-2 text-muted">Escribinos y te lo conseguimos.</p>
+          <div className="mt-8 rounded-[28px] bg-ink-2 px-6 py-14 text-center ring-1 ring-line md:py-16">
+            <p className="title-lux text-[28px] md:text-4xl">
+              Este equipo <b>consultalo por WhatsApp.</b>
+            </p>
+            <p className="mx-auto mt-3 max-w-md text-[17px] text-fg/75">
+              Puede que lo tengamos en el local. Y si querés enterarte antes que nadie, agendanos para ver las ofertas.
+            </p>
+            <a
+              href={waLink(settings.contact.whatsapp, q.trim() ? `¡Hola Liberados! Estoy buscando un ${q.trim()}. ¿Lo tienen?` : "¡Hola Liberados! Estoy buscando un iPhone. ¿Qué tienen disponible?")}
+              target="_blank"
+              rel="noopener"
+              className="mx-auto mt-7 flex min-h-14 w-fit items-center justify-center gap-2.5 rounded-2xl bg-[#1fae55] px-7 text-[17px] font-semibold text-white transition hover:brightness-110 active:scale-[.98]"
+            >
+              <WhatsAppIcon className="h-6 w-6" /> Consultar por WhatsApp
+            </a>
           </div>
+        )}
+
+        {/* leyenda chica al pie del catálogo */}
+        {list.length > 0 && (
+          <p className="mt-10 text-center text-[14px] text-muted">
+            ¿No encontraste el celular que buscabas?{" "}
+            <a
+              href={waLink(settings.contact.whatsapp, "¡Hola Liberados! No encontré en la web el celular que busco. ¿Me ayudan?")}
+              target="_blank"
+              rel="noopener"
+              className="font-semibold text-fg/90 underline decoration-cyan/60 underline-offset-4 hover:text-fg"
+            >
+              Consultanos por WhatsApp
+            </a>
+            , muchos equipos los tenemos en el local.
+          </p>
         )}
       </div>
     </section>
@@ -217,7 +246,20 @@ function ProductCard({ product: p, onOpen }: { product: PublicProduct; onOpen: (
           <h3 className="font-display text-[22px] font-bold leading-tight tracking-tight">
             {p.name} <span className="font-medium text-muted">{p.storage}</span>
           </h3>
-          <p className="mt-1 text-[15px] text-muted">{[p.colorName, p.battery ? `Batería ${p.battery}%` : null].filter(Boolean).join(" · ") || " "}</p>
+          <div className="mt-1.5 flex min-h-7 flex-wrap items-center gap-x-2.5 gap-y-1">
+            {p.colorName && <span className="text-[15px] font-medium text-fg/75">{p.colorName}</span>}
+            {/* batería bien visible: es lo primero que mira el que compra un usado */}
+            {p.battery ? (
+              <span
+                className={clsx(
+                  "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[15px] font-bold ring-1",
+                  p.battery >= 85 ? "bg-emerald-400/15 text-emerald-300 ring-emerald-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30",
+                )}
+              >
+                <BatteryFull className="h-4 w-4" strokeWidth={2.2} /> Batería {p.battery}%
+              </span>
+            ) : null}
+          </div>
           <div className="mt-auto pt-3">
             <Price p={p} />
           </div>

@@ -51,10 +51,11 @@ export function WelcomePopup() {
 
   function cta() {
     close();
+    // el scroll suave está pausado mientras el cartel está abierto: se espera a que se reactive
     if (w.action === "producto" && product) setTimeout(() => openProduct(product), 300);
-    else if (w.action === "canje") scrollToId("canje");
+    else if (w.action === "canje") setTimeout(() => scrollToId("plan-canje"), 300);
     else if (w.action === "whatsapp") window.open(waLink(settings.contact.whatsapp, `¡Hola Liberados! Vi en la web: ${w.title}`), "_blank");
-    else scrollToId("catalogo");
+    else setTimeout(() => scrollToId("catalogo"), 300);
   }
 
   return (

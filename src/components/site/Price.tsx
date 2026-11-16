@@ -84,7 +84,7 @@ export function Price({ p, size = "sm", className }: { p: PublicProduct; size?: 
         {p.cashPrice ? <span className="ml-1.5 align-middle text-[0.5em] font-semibold uppercase tracking-[0.12em] text-accent">efectivo</span> : null}
       </p>
       {ars > 0 && (
-        <p className={clsx("text-muted", size === "sm" ? "text-[15px]" : "text-sm")}>
+        <p className={clsx("font-semibold text-fg/80", size === "sm" ? "text-[16px]" : "text-[15px]")}>
           ≈ {money(ars)}
         </p>
       )}
