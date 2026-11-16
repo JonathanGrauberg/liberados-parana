@@ -144,7 +144,7 @@ export function Catalog() {
                         setMore((m) => ({ ...m, [g.id]: !open }));
                         if (open) document.getElementById(`grupo-${g.id}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
                       }}
-                      className="ring-brand flex h-12 items-center gap-2 rounded-full px-7 text-[16px] font-semibold text-fg transition hover:bg-fg/[.06]"
+                      className="ring-brand flex h-14 w-full items-center justify-center gap-2 rounded-full px-7 text-[18px] font-bold text-ink shadow-[0_14px_40px_-12px_rgba(123,127,220,.7)] transition active:scale-[.98] [background:var(--brand-gradient)] md:h-12 md:w-auto md:text-[16px] md:font-semibold md:text-fg md:shadow-none md:[background:none] md:hover:bg-fg/[.06]"
                     >
                       {open ? "Ver menos" : `Ver todos los ${g.id === "usados" ? "usados" : "nuevos"} (${items.length})`}
                       <ChevronDown className={clsx("h-5 w-5 transition-transform", open && "rotate-180")} />
