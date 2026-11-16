@@ -73,7 +73,7 @@ export function Financiaciones() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
           <p className="eyebrow">Financiación</p>
-          <h2 id="financiacion-title" className="title-lux mt-3 text-[clamp(34px,5vw,64px)]">
+          <h2 id="financiacion-title" className="title-lux mt-3 text-[clamp(32px,4.2vw,56px)]">
             Nuestras <b>financiaciones.</b>
           </h2>
         </motion.div>

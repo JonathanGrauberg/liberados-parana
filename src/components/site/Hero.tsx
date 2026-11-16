@@ -35,7 +35,7 @@ export function Hero() {
       <div className="pointer-events-none absolute -bottom-40 -left-20 -z-10 h-[480px] w-[480px] rounded-full bg-cyan/20 blur-[140px]" />
 
       <div className="mx-auto w-full max-w-7xl px-5 pb-12 pt-28 md:px-8 md:pb-16">
-        <h1 className="font-display max-w-4xl text-[clamp(44px,7vw,100px)] font-extrabold leading-[0.95] tracking-[-0.04em]">
+        <h1 className="font-display max-w-4xl text-[clamp(44px,7vw,100px)] font-bold leading-[0.95] tracking-[-0.07em]">
           {["Tu próximo iPhone", "está acá."].map((w, n) => (
             <motion.span
               key={w}

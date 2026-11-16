@@ -56,7 +56,7 @@ body {
   background: #1d1a55;
   color: var(--fg);
   font-family: var(--font-text), system-ui, sans-serif;
-  font-size: 17px;
+  font-size: 16px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -169,11 +169,11 @@ body {
 /* Título en negrita con remate en degradé: <h2 class="title-lux">Una frase <b>que remata.</b></h2> */
 .title-lux {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.04em;
+  font-weight: 700;
+  letter-spacing: -0.06em;
   line-height: 1;
 }
-.title-lux b { font-weight: 800; }
+.title-lux b { font-weight: 700; }
 
 /* Pegado debajo del navbar; sube a 0 cuando el navbar se oculta */
 .sticky-under-nav {

@@ -45,7 +45,7 @@ export function Reviews({ data }: { data: GoogleReviews | null }) {
         <Reveal className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="eyebrow">Reseñas</p>
-            <h2 className="title-lux mt-3 text-[clamp(34px,5vw,64px)]">
+            <h2 className="title-lux mt-3 text-[clamp(32px,4.2vw,56px)]">
               Lo que dicen <b>nuestros clientes.</b>
             </h2>
           </div>

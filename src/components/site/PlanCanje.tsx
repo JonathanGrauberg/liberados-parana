@@ -54,7 +54,7 @@ export function PlanCanje() {
             <p className="eyebrow flex items-center gap-2">
               <ArrowLeftRight className="h-4 w-4" /> Plan canje
             </p>
-            <h2 className="title-lux mt-3 text-[clamp(38px,5.4vw,72px)] leading-[0.98]">
+            <h2 className="title-lux mt-3 text-[clamp(32px,4.2vw,56px)] leading-[0.98]">
               Tu iPhone vale. <b>Pagá solo la diferencia.</b>
             </h2>
             <p className="mt-4 max-w-md text-lg text-muted">Elegí cuál te querés llevar, contanos cómo está el tuyo y mirá al instante cuánto pagás.</p>

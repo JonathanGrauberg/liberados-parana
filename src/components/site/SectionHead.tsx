@@ -9,7 +9,7 @@ export function SectionHead({ n, label, title, link, aside }: { n: string; label
         <p className="eyebrow">
           {label}
         </p>
-        <h2 className="title-lux mt-3 text-[clamp(34px,5vw,68px)]">{title}</h2>
+        <h2 className="title-lux mt-3 text-[clamp(32px,4.2vw,56px)]">{title}</h2>
       </div>
       {link && (
         <a href={link.href} className="link-line">

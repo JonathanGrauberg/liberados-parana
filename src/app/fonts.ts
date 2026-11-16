@@ -6,7 +6,7 @@
  *      export const display = localFont({ src: "./fonts/Marca-Bold.woff2", variable: "--font-display" });
  * Las variables --font-display / --font-text las consume globals.css.
  */
-import { Montserrat, Inter } from "next/font/google";
+import { Montserrat } from "next/font/google";
 
 export const display = Montserrat({
   variable: "--font-display",
@@ -14,7 +14,9 @@ export const display = Montserrat({
   weight: ["500", "600", "700", "800", "900"],
 });
 
-export const text = Inter({
+// Textos también en Montserrat, como la web anterior del local
+export const text = Montserrat({
   variable: "--font-text",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
