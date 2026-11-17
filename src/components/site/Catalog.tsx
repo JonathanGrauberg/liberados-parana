@@ -182,7 +182,7 @@ export function Catalog() {
 
         {/* leyenda chica al pie del catálogo */}
         {list.length > 0 && (
-          <p className="mt-10 text-center text-[14px] text-muted">
+          <p className="mx-auto mt-10 max-w-[34ch] text-center text-[17px] leading-relaxed text-fg/75 md:max-w-none md:text-[16px]">
             ¿No encontraste el celular que buscabas?{" "}
             <a
               href={waLink(settings.contact.whatsapp, "¡Hola Liberados! No encontré en la web el celular que busco. ¿Me ayudan?")}
